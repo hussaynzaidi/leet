@@ -1,0 +1,130 @@
+int *parent, *depth;
+
+#define max(a, b) ((a) > (b) ? (a) : (b))
+struct Queue {
+    int data[1000];
+    int front, rear;
+};
+
+void enqueue(struct Queue *q, int val) {
+    q->data[q->rear++] = val;
+}
+
+int dequeue(struct Queue *q) {
+    return q->data[q->front++];
+}
+
+int isEmpty(struct Queue *q) {
+    return q->front == q->rear;
+}
+
+int find(int node) {
+    if (parent[node] != node)
+        parent[node] = find(parent[node]); 
+    return parent[node];
+}
+
+void unionOp(int n1, int n2) {
+    n1 = find(n1);
+    n2 = find(n2);
+    if (n1 == n2) return;
+
+    if (depth[n1] < depth[n2])
+        parent[n1] = n2;
+    else if (depth[n1] > depth[n2])
+        parent[n2] = n1;
+    else {
+        parent[n2] = n1;
+        depth[n1]++;
+    }
+}
+
+int getNumberOfGroups(int **adjList, int *adjSize, int srcNode, int n) {
+    struct Queue nodesQueue;
+    nodesQueue.front = nodesQueue.rear = 0;
+
+    int layerSeen[n];
+    for (int i = 0; i < n; i++)
+        layerSeen[i] = -1;
+
+    enqueue(&nodesQueue, srcNode);
+    layerSeen[srcNode] = 0;
+    
+    int deepestLayer = 0;
+
+    while (!isEmpty(&nodesQueue)) {
+        int numNodes = nodesQueue.rear - nodesQueue.front;
+        
+        for (int i = 0; i < numNodes; i++) {
+            int currentNode = dequeue(&nodesQueue);
+            for (int j = 0; j < adjSize[currentNode]; j++) {
+                int neighbor = adjList[currentNode][j];
+
+                if (layerSeen[neighbor] == -1) {
+                    layerSeen[neighbor] = layerSeen[currentNode] + 1;
+                    enqueue(&nodesQueue, neighbor);
+                } else if (layerSeen[neighbor] == layerSeen[currentNode]) {
+                    return -1; 
+                }
+            }
+        }
+        deepestLayer++;
+    }
+    return deepestLayer;
+}
+
+int magnificentSets(int n, int** edges, int edgesSize, int* edgesColSize) {
+
+    int **adjList = (int**)malloc(n * sizeof(int*));
+    int *adjSize = (int*)calloc(n, sizeof(int));
+
+
+    parent = (int*)malloc(n * sizeof(int));
+    depth = (int*)malloc(n * sizeof(int));
+
+    for (int i = 0; i < n; i++) {
+        parent[i] = i;
+        depth[i] = 0;
+        adjList[i] = (int*)malloc(n * sizeof(int)); 
+    }
+
+    for (int i = 0; i < edgesSize; i++) {
+        int u = edges[i][0] - 1;
+        int v = edges[i][1] - 1;
+        
+        adjList[u][adjSize[u]++] = v;
+        adjList[v][adjSize[v]++] = u;
+        
+        unionOp(u, v);
+    }
+
+    int numOfGroupsForComponent[n];
+    for (int i = 0; i < n; i++) {
+        numOfGroupsForComponent[i] = -1;
+    }
+
+    for (int i = 0; i < n; i++) {
+        int numberOfGroups = getNumberOfGroups(adjList, adjSize, i, n);
+        
+        if (numberOfGroups == -1) return -1;
+
+        int root = find(i);
+        numOfGroupsForComponent[root] = max(numOfGroupsForComponent[root], numberOfGroups);
+    }
+
+
+    int totalGroups = 0;
+    for (int i = 0; i < n; i++) {
+        if (numOfGroupsForComponent[i] != -1) 
+            totalGroups += numOfGroupsForComponent[i];
+    }
+
+    for (int i = 0; i < n; i++) 
+        free(adjList[i]);
+    free(adjList);
+    free(adjSize);
+    free(parent);
+    free(depth);
+
+    return totalGroups;
+}
