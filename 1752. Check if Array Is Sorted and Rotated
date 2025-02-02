@@ -1,0 +1,14 @@
+bool check(int* nums, int numsSize) {
+    int ro = 0;
+    for(int i; i < numsSize - 1; i++)
+    {
+        if(nums[i] > nums[i+1])
+        {
+            //this is a rotation point
+            ro+=1;
+        }
+    }
+    if(nums[numsSize-1] > nums[0]) ro++;
+    if(ro > 1) return false;
+    return true;
+}
