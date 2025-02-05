@@ -1,0 +1,49 @@
+bool areAlmostEqual(char* s1, char* s2) {
+    char* a = s1;
+    char* b = s2; 
+    int c = 0;
+    char p[2];
+    char o[2];
+
+    if(strlen(s1) != strlen(s2)) return false;
+    
+    while( *a != '\0' && *b != '\0')
+    {
+        if(*a != *b)
+        {
+            c++;
+            if(c > 2 ) return false;
+            p[c - 1] = *b;
+            o[c - 1] = b - s2;
+        }
+        a++; b++;
+    }
+
+    if(c == 0) return true;
+    if(c == 1) return false;
+    if(c == 2){
+        b = s2;
+        while(*b != '\0' )
+        {
+            if((b - s2) == o[0])
+            {
+                *b = p[1];
+            }
+            if((b - s2) == o[1])
+            {
+                *b = p[0];
+            }
+            b++;
+        }
+    a = s1; b = s2;
+        while( *a != '\0' && *b != '\0')
+        {
+            if(*a != *b)
+            {
+                return false;
+            }
+            a++; b++;
+        }
+    }
+return true;
+}
