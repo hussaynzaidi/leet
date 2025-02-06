@@ -1,0 +1,65 @@
+typedef struct {
+    int key;
+    int value;
+} HashNode;
+
+typedef struct {
+    HashNode* table;
+    int size;
+    int capacity;
+} HashMap;
+
+unsigned int hashFunction(int key, int capacity) {
+    return (unsigned int)key % capacity;
+}
+
+HashMap* createHashMap(int capacity) {
+    HashMap* map = (HashMap*)malloc(sizeof(HashMap));
+    map->table = (HashNode*)calloc(capacity, sizeof(HashNode));
+    map->size = 0;
+    map->capacity = capacity;
+    return map;
+}
+
+void put(HashMap* map, int key, int value) {
+    int index = hashFunction(key, map->capacity);
+    while (map->table[index].key != 0 && map->table[index].key != key) {
+        index = (index + 1) % map->capacity;
+    }
+    if (map->table[index].key == 0) {
+        map->size++;
+        map->table[index].key = key;
+    }
+    map->table[index].value += value;
+}
+
+int get(HashMap* map, int key) {
+    int index = hashFunction(key, map->capacity);
+    while (map->table[index].key != 0) {
+        if (map->table[index].key == key) {
+            return map->table[index].value;
+        }
+        index = (index + 1) % map->capacity;
+    }
+    return 0;
+}
+
+int tupleSameProduct(int* nums, int numsSize) {
+    HashMap* productFreq = createHashMap(1000001);
+    int res = 0;
+    for (int i = 0; i < numsSize; i++) {
+        for (int j = i + 1; j < numsSize; j++) {
+            int product = nums[i] * nums[j];
+            put(productFreq, product, 1);
+        }
+    }
+    for (int i = 0; i < productFreq->capacity; i++) {
+        if (productFreq->table[i].key != 0) {
+            int count = productFreq->table[i].value;
+            if (count > 1) {
+                res += (count * (count - 1)) / 2;
+            }
+        }
+    }
+    return res * 8;
+}
