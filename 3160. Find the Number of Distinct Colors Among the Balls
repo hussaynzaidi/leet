@@ -1,0 +1,131 @@
+typedef struct {
+    int key; int value; UT_hash_handle hh;
+}HM;
+
+int distinctColorsCount = 0;
+int get(HM* map, int key, int value)
+{
+    HM* entry; 
+    HASH_FIND_INT(map, &key, entry);
+    return entry? entry->value : value;
+}
+
+void erase(HM** map, int key) {
+    HM* entry;
+    HASH_FIND_INT(*map, &key, entry);
+    if(entry) {HASH_DEL(*map, entry); free(entry);}
+}
+void insert(HM** map, int key, int value)
+{
+    HM* entry;
+    HASH_FIND_INT(*map, &key, entry);
+
+    if(entry) {entry->value = value;}
+    else { 
+        entry = (HM*) malloc(sizeof(HM));
+        entry->key = key;
+        entry->value = value;
+        HASH_ADD_INT(*map, key, entry);
+    }
+}
+
+int* queryResults(int limit, int** queries, int queriesSize, int* queriesColSize, int* returnSize) {
+    
+    *returnSize = queriesSize;
+    int* existingColors = (int*)malloc(queriesSize * sizeof(int));
+
+    HM * balls = NULL;
+    HM* colors = NULL;
+    
+    for (int i = 0; i < queriesSize; i++) {
+        int b = queries[i][0];
+        int c = queries[i][1];
+        int oc = get(balls, b, -1);
+        if(oc != c)
+        {
+            if(oc != -1)
+        {
+            int count = get(colors, oc, 0) - 1;
+            if(count ==0 ) { erase(&colors, oc); distinctColorsCount--;}
+            else { insert(&colors, oc, count); distinctColorsCount++; }
+        }
+
+        insert(&balls, b, c);
+        insert(&colors, c, get(colors, c, 0) + 1);
+        }
+        int distinctColors = HASH_COUNT(colors);
+        existingColors[i] = distinctColors;
+    }
+    return existingColors;
+}
+
+
+
+---------------------------------------------------
+following is a highly optimized code, not mine. 
+
+#pragma GCC optimize (-O3 -fomit-frame-pointer -march=native)
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+
+int next_pow2(int val) {
+    --val;
+    val |= val >> 1;
+    val |= val >> 2;
+    val |= val >> 4;
+    val |= val >> 8;
+    val |= val >> 16;
+    return val + 1;
+}
+
+int probe(int* set, int size, int val) {
+    int idx = val & (size - 1);
+    int step = 1;
+    while (set[idx] != 0x7f7f7f7f && set[idx] != val)
+        idx = (idx + step++) & (size - 1);
+    return idx;
+}
+int* queryResults(int limit, int** queries, int queriesSize,
+                  int* queriesColSize, int* returnSize) {
+
+    *returnSize = 0;
+    int* res = calloc(queriesSize, sizeof *res);
+    if (!res)
+        return NULL;
+    int size = next_pow2(queriesSize);
+    int set[size];
+    int colors[size];
+    int balls[size];
+    int bcolors[size];
+    memset(set, 0x7f, size * sizeof *set);
+    memset(colors, 0, size * sizeof *colors);
+    memset(balls, 0x7f, size * sizeof *set);
+    memset(bcolors, 0, size * sizeof *colors);
+
+    int curr_colors = 0;
+    for (int i = 0; i < queriesSize; ++i) {
+        int ball = queries[i][0];
+        int idx = probe(balls, size, ball);
+        balls[idx] = ball;
+        int old_color = bcolors[idx];
+        if (old_color > 0) {
+            int idx1 = probe(set, size, old_color);
+            if (set[idx1] != 0x7f7f7f7f && colors[idx1] == 1)
+                --curr_colors;
+            --colors[idx1];
+        }
+
+        int new_color = queries[i][1];
+        int idx2 = probe(set, size, new_color);
+        set[idx2] = new_color;
+        if (set[idx2] == 0x7f7f7f7f || colors[idx2] == 0)
+            ++curr_colors;
+        ++colors[idx2];
+        bcolors[idx] = new_color;
+
+        res[(*returnSize)++] = curr_colors;
+    }
+
+    return res;
+}
