@@ -1,0 +1,78 @@
+typedef struct {
+    int key;
+    int value;
+    UT_hash_handle hh;
+} MapEntry;
+typedef struct {
+    MapEntry* index_to_num;
+    MapEntry* num_to_min_index;
+} NumberContainers;
+
+NumberContainers* numberContainersCreate() {
+    NumberContainers* obj = (NumberContainers*)malloc(sizeof(NumberContainers));
+    obj->index_to_num = NULL;
+    obj->num_to_min_index = NULL;
+    return obj;
+}
+
+void numberContainersChange(NumberContainers* obj, int index, int number) {
+    MapEntry* old_entry;
+    HASH_FIND_INT(obj->index_to_num, &index, old_entry);
+    if (old_entry) {
+        int old_num = old_entry->value;
+        MapEntry* min_entry;
+        HASH_FIND_INT(obj->num_to_min_index, &old_num, min_entry);
+        if (min_entry && min_entry->value == index) {
+            int new_min = INT_MAX;
+            MapEntry* curr;
+            for (curr = obj->index_to_num; curr != NULL; curr = curr->hh.next) {
+                if (curr->value == old_num && curr->key != index &&
+                    curr->key < new_min) {
+                    new_min = curr->key;
+                }
+            }
+            if (new_min == INT_MAX) {
+                HASH_DEL(obj->num_to_min_index, min_entry);
+                free(min_entry);
+            } else {
+                min_entry->value = new_min;
+            }
+        }
+
+        old_entry->value = number;
+    } else {
+        old_entry = (MapEntry*)malloc(sizeof(MapEntry));
+        old_entry->key = index;
+        old_entry->value = number;
+        HASH_ADD_INT(obj->index_to_num, key, old_entry);
+    }
+    MapEntry* min_entry;
+    HASH_FIND_INT(obj->num_to_min_index, &number, min_entry);
+    if (!min_entry) {
+        min_entry = (MapEntry*)malloc(sizeof(MapEntry));
+        min_entry->key = number;
+        min_entry->value = index;
+        HASH_ADD_INT(obj->num_to_min_index, key, min_entry);
+    } else if (index < min_entry->value) {
+        min_entry->value = index;
+    }
+}
+
+int numberContainersFind(NumberContainers* obj, int number) {
+    MapEntry* entry;
+    HASH_FIND_INT(obj->num_to_min_index, &number, entry);
+    return entry ? entry->value : -1;
+}
+
+void numberContainersFree(NumberContainers* obj) {
+    MapEntry *curr, *tmp;
+    HASH_ITER(hh, obj->index_to_num, curr, tmp) {
+        HASH_DEL(obj->index_to_num, curr);
+        free(curr);
+    }
+    HASH_ITER(hh, obj->num_to_min_index, curr, tmp) {
+        HASH_DEL(obj->num_to_min_index, curr);
+        free(curr);
+    }
+    free(obj);
+}
