@@ -1,0 +1,13 @@
+char* clearDigits(char* s) {
+    char*x = (char *) malloc((strlen(s) + 1));
+    int j = 0;
+    for (int i = 0; i < strlen(s); i++) {
+        if(!isdigit(s[i]))
+        { x[j++] = s[i];}
+        else {
+            if(j > 0) j--;
+        }
+    }
+    x[j] = '\0';
+    return x;
+}
