@@ -1,0 +1,15 @@
+char* removeOccurrences(char* s, char* part) {
+    char*x = (char *) malloc((strlen(s) + 1));
+    int len = strlen(part);
+    int j = 0;
+    for(int i = 0; s[i] != '\0'; i++)
+    {
+        x[j++] = s[i];
+
+        if(j >= len && strncmp(&x[j - len], part, len) == 0){
+            j -=len;
+        }
+    }
+    x[j] = '\0';
+    return x;
+}
