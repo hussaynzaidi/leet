@@ -1,0 +1,74 @@
+typedef struct {
+    long *arr;
+    int size;
+    int capacity;
+} Heap;
+
+void insert(Heap* h, long data) {
+    if (h->size >= h->capacity) return;
+
+    int i = h->size;
+    h->arr[i] = data;
+    h->size++;
+
+    while (i > 0) {
+        int parent = (i - 1) / 2;
+        if (h->arr[parent] > h->arr[i]) {
+            long temp = h->arr[i];
+            h->arr[i] = h->arr[parent];
+            h->arr[parent] = temp;
+            i = parent;
+        } else {
+            break;
+        }
+    }
+}
+
+void minHeapify(Heap* h, int index) {
+    while (1) {
+        int left = index * 2 + 1;
+        int right = index * 2 + 2;
+        int min = index;
+
+        if (left < h->size && h->arr[left] < h->arr[min]) min = left;
+        if (right < h->size && h->arr[right] < h->arr[min]) min = right;
+
+        if (min != index) {
+            long temp = h->arr[min];
+            h->arr[min] = h->arr[index];
+            h->arr[index] = temp;
+            index = min;
+        } else {
+            break;
+        }
+    }
+}
+
+long extractMin(Heap* h) {
+    if (h->size == 0) return -1;  
+    long deleteItem = h->arr[0];
+    h->arr[0] = h->arr[h->size - 1];
+    h->size--;
+    minHeapify(h, 0);
+    return deleteItem;
+}
+
+int minOperations(int* nums, int numsSize, int k) {
+    Heap *h = (Heap *) malloc(sizeof(Heap));
+    h->arr = (long *) malloc(sizeof(long) * numsSize);
+    h->capacity = numsSize;
+    h->size = 0;
+
+    for (int i = 0; i < numsSize; i++) {
+        insert(h, nums[i]);
+    }
+
+    int count = 0;
+    while (h->size >= 2 && h->arr[0] < k) {
+        long a = extractMin(h);
+        long b = extractMin(h);
+        insert(h, (2 * a) + b);
+        count++;
+    }
+    return count;
+}
