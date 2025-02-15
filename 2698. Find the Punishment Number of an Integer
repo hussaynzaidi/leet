@@ -1,0 +1,35 @@
+bool cp(char* sn, int t) {
+    int len = strlen(sn);
+    if (len == 0) && (t == 0) return true;
+
+    if(t < 0) return false;
+
+    for (int i = 1; i <= len; i++) {
+        char left[i + 1];
+        strncpy(left, sn, i);
+        left[i] = '\0';
+
+        char* right = sn + i;
+        int l = atoi(left);
+        if (cp(right, t - l)) {
+            return true;
+        }
+    }
+    return false;
+}
+int punishmentNumber(int n) {
+    int pn = 0;
+    for (int i = 1; i <= n; i++) {
+        int p = i * i;
+        char cn[10];
+        char sn[10];
+        snprintf(cn, sizeof(cn), "%d", i);
+        snprintf(sn, sizeof(sn), "%d", p);
+
+        if (cp(sn, atoi(cn))) {
+            pn += i;
+        }
+    }
+
+    return pn;
+}
