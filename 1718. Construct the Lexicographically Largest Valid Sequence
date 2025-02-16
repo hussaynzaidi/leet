@@ -1,0 +1,39 @@
+bool Rec(int i, int * rs, int size, bool * isUsed, int t)
+{
+    if(i == size) return true;
+
+    if(rs[i] != 0){
+       return Rec(i+1, rs, size, isUsed, t);
+    }
+    for(int x = t; x >= 1; x--)
+    {
+        if(isUsed[x] == true) continue;
+
+        isUsed[x] = true;
+        rs[i] = x;
+        if(x == 1){
+             if (Rec(i + 1, rs, size, isUsed, t)) return true;
+        }
+        else if (i+x < size && rs[i+x] == 0)
+        {
+            rs[i+x] = x;
+            if(Rec(i+1, rs ,size, isUsed, t))return true;
+
+            rs[i+x] = 0;
+        }
+        rs[i] = 0;
+    isUsed[x] = false;
+    }
+    
+    return false;
+}
+int* constructDistancedSequence(int n, int* returnSize) {
+    int size = 2 * n - 1;
+    int *rs = (int *)malloc(size * sizeof(int));
+    memset(rs, 0, size * sizeof(int));  
+    bool *isUsed = (bool *)malloc((n + 1) * sizeof(bool));
+     memset(isUsed, false, (n + 1) * sizeof(bool));  
+    Rec(0, rs, size, isUsed, n);
+    *returnSize = size;
+    return rs;
+}
