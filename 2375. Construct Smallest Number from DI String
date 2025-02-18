@@ -1,0 +1,16 @@
+char* smallestNumber(char* pattern) {
+    int size = strlen(pattern);
+    int t = -1, r = 0, c = 1;
+    int stack[size + 1];
+    char * result = (char *) malloc(sizeof(char) * (size+2));
+    for (int i = 0; i <= size; i++) {
+        stack[++t] = c++;
+        if (pattern[i] == 'I' || i == size) {
+            while (t >= 0) {
+                result[r++] = ('0' + stack[t--]);
+            }
+        }
+    }
+    result[r] = '\0';
+    return result;
+}
