@@ -1,0 +1,32 @@
+char* getHappyString(int n, int k) {
+    int p =  pow(2, n - 1);
+    int tn = 3 * p;
+
+    if (k > tn) {
+        return "";
+    }
+    char* result = (char*)malloc((n + 1) * sizeof(char));
+    result[n] = '\0';
+
+    int index = k -1;
+    int gs = p;
+    
+   
+    result[0] = 'a' + (index / gs );
+    index %= gs;
+    for (int i = 1; i < n; ++i) {
+
+        gs /= 2;
+
+        if (result[i - 1] == 'a') {
+            result[i] = (index < gs) ? 'b' : 'c';
+        } else if (result[i - 1] == 'b') {
+            result[i] = (index < gs) ? 'a' : 'c';
+        } else {
+            result[i] = (index < gs ) ? 'a' : 'b';
+        }
+        index %= gs;
+    }
+
+    return result;
+}
