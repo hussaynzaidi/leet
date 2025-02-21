@@ -1,0 +1,44 @@
+typedef struct {
+    int k;
+    UT_hash_handle hh;
+} HM;
+typedef struct {
+    HM* map;
+    struct TreeNode* root;
+} FindElements;
+
+void recover(struct TreeNode* root, int val, HM** map) {
+    if (!root)
+        return;
+    root->val = val;
+    HM* e = (HM*)malloc(sizeof(HM));
+    e->k = val;
+    HASH_ADD_INT(*map, k, e);
+    recover(root->left, 2 * val + 1, map);
+    recover(root->right, 2 * val + 2, map);
+}
+FindElements* findElementsCreate(struct TreeNode* root) {
+    FindElements* obj = (FindElements*)malloc(sizeof(FindElements));
+    obj->map = NULL;
+    obj->root = root;
+    recover(root, 0, &(obj->map));
+    return obj;
+}
+
+bool findElementsFind(FindElements* obj, int target) {
+    HM* e;
+    HASH_FIND_INT(obj->map, &target, e);
+    if (e) {
+        return true;
+    }
+    return false;
+}
+
+void findElementsFree(FindElements* obj) {
+    HM *current, *tmp;
+    HASH_ITER(hh, obj->map, current, tmp) {
+        HASH_DEL(obj->map, current);
+        free(current);
+    }
+    free(obj);
+}
