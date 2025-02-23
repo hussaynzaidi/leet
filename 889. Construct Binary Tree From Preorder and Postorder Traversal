@@ -1,0 +1,32 @@
+struct TreeNode* constructTree(int preS, int preE, int postS, int* preorder,
+                               int* postorder) {
+    if (preS > preE) {
+        return NULL;
+    }
+    if (preS == preE) {
+        struct TreeNode* tn = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+        tn->val = preorder[preS];
+        tn->left = tn->right = NULL;
+        return tn;
+    }
+
+    int lr = preorder[preS + 1];
+    int nnl = 1;
+    while (postorder[postS + nnl - 1] != lr) {
+        nnl++;
+    }
+
+    struct TreeNode* tn = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+    tn->val = preorder[preS];
+    tn->left = constructTree(preS + 1, preS + nnl, postS, preorder, postorder);
+    tn->right =
+        constructTree(preS + nnl + 1, preE, postS + nnl, preorder, postorder);
+    return tn;
+}
+
+struct TreeNode* constructFromPrePost(int* preorder, int preorderSize,
+                                      int* postorder, int postorderSize) {
+    int nn = preorderSize;
+    struct TreeNode* tn = constructTree(0, nn - 1, 0, preorder, postorder);
+    return tn;
+}
