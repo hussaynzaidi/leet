@@ -1,0 +1,86 @@
+#define MN 100000
+
+struct Node {
+    int data;
+    struct Node * next;
+};
+struct G {
+    struct Node * head[MN];
+};
+struct Node* createNode(int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = NULL;
+    return newNode;
+}
+
+void add(struct G * g, int u, int v){
+    struct Node * n1 = createNode(v);
+    n1->next = g->head[u];
+    g->head[u] = n1;
+    struct Node * n2 = createNode(u);
+    n2->next = g->head[v];
+    g->head[v] = n2;
+}
+int distanceFromBob[MN];
+int visited[MN];
+
+
+void dfsBob(struct G * g, int node, int parent, int bob)
+{
+    if(node == bob)
+    {
+        distanceFromBob[node] = 0;
+    }
+    else {
+        distanceFromBob[node] = MN;
+    }
+
+    for (struct Node* adj = g->head[node]; adj != NULL; adj = adj->next) {
+        if (adj->data != parent) {
+            dfsBob(g, adj->data, node, bob);
+            distanceFromBob[node] = fmin(distanceFromBob[node], distanceFromBob[adj->data] + 1);
+        }
+    }
+}
+
+
+int dfsAlice(struct G * g, int node, int parent, int time, int * amount){
+    int maxIncome = 0;
+    int maxChild = INT_MIN;
+
+    if(distanceFromBob[node] > time)
+    {
+        maxIncome += amount[node];
+    }
+    else if ( distanceFromBob[node] == time)
+    {
+        maxIncome += amount[node] / 2;
+    }
+
+    for(struct Node * adj = g->head[node]; adj != NULL; adj = adj->next){
+        if(adj->data != parent) {
+            maxChild = fmax(maxChild, dfsAlice(g, adj->data, node, time + 1, amount));
+        }
+    }
+    return maxIncome + (maxChild == INT_MIN ? 0 : maxChild);
+}
+
+int mostProfitablePath(int** edges, int edgesSize, int* edgesColSize, int bob, int* amount, int amountSize) {
+    struct G g;
+
+    for(int i = 0; i < MN; i++)
+    {
+    g.head[i] = NULL;
+    distanceFromBob[i] = -1;
+    visited[i] = 0;
+    }
+
+
+    for(int i = 0; i < edgesSize; i++)
+    {add(&g, edges[i][0], edges[i][1]);}
+
+    dfsBob(&g, 0, -1, bob);
+
+    return dfsAlice(&g, 0, -1, 0, amount);
+}
