@@ -1,0 +1,24 @@
+int lenLongestFibSubseq(int* arr, int arrSize) {
+    int n = arrSize;
+    int dp[n][n];
+    memset(dp, 0, sizeof(dp));
+    int maxLen = 0;
+
+    for (int curr = 2; curr < arrSize; curr++) {
+        int start = 0, end = curr - 1;
+        while (start < end) {
+            if (arr[start] + arr[end] > arr[curr]) {
+                end--;
+            } else if (arr[start] + arr[end] < arr[curr]) {
+                start++;
+            } else {
+                dp[end][curr] = dp[start][end] + 1;
+                if (maxLen < dp[end][curr])
+                    maxLen = dp[end][curr];
+                end--;
+                start++;
+            }
+        }
+    }
+    return maxLen > 0 ? maxLen + 2 : 0;
+}
