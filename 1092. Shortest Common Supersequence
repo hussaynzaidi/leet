@@ -1,0 +1,48 @@
+char* shortestCommonSupersequence(char* str1, char* str2) {
+    int s1 = strlen(str1);
+    int s2 = strlen(str2);
+    int dp[s1 + 1][s2 + 1];
+
+    for (int r = 0; r <= s1; r++) {
+        dp[r][0] = r;
+    }
+    for (int c = 0; c <= s2; c++) {
+        dp[0][c] = c;
+    }
+
+    for (int r = 1; r <= s1; r++) {
+        for (int c = 1; c <= s2; c++) {
+            if (str1[r - 1] == str2[c - 1]) {
+                dp[r][c] = dp[r - 1][c - 1] + 1;
+            } else {
+                dp[r][c] = ((dp[r - 1][c] < dp[r][c - 1]) ? dp[r - 1][c]
+                                                          : dp[r][c - 1]) +
+                           1;
+            }
+        }
+    }
+    char* scs = (char*)malloc((dp[s1][s2] + 1));
+    int idx = dp[s1][s2];
+    scs[idx] = '\0';
+
+    int i = s1;
+    int j = s2;
+    while (i > 0 && j > 0) {
+        if (str1[i - 1] == str2[j - 1]) {
+            scs[--idx] = str1[i - 1];
+            i--, j--;
+        } else if (dp[i - 1][j] < dp[i][j - 1]) {
+            scs[--idx] = str1[i - 1];
+            i--;
+        } else {
+            scs[--idx] = str2[j - 1];
+            j--;
+        }
+    }
+
+    while (i > 0)
+        scs[--idx] = str1[--i];
+    while (j > 0)
+        scs[--idx] = str2[--j];
+    return scs;
+}
