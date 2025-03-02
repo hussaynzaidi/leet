@@ -1,0 +1,52 @@
+typedef struct {
+    int key;
+    int value;
+    UT_hash_handle hh;
+} HM;
+
+int soi(HM* a, HM* b) {
+    if (a->key == b->key)
+        return 0;
+    return (a->key < b->key) ? -1 : 1;
+}
+
+int** mergeArrays(int** nums1, int nums1Size, int* nums1ColSize, int** nums2,
+                  int nums2Size, int* nums2ColSize, int* returnSize,
+                  int** returnColumnSizes) {
+    HM* hm = NULL;
+    for (int i = 0; i < nums1Size; i++) {
+        HM* entry = (HM*)malloc(sizeof(HM));
+        entry->key = nums1[i][0];
+        entry->value = nums1[i][1];
+        HASH_ADD_INT(hm, key, entry);
+    }
+    for (int i = 0; i < nums2Size; i++) {
+        HM* entry;
+        HASH_FIND_INT(hm, &nums2[i][0], entry);
+        if (entry) {
+            entry->value += nums2[i][1];
+        } else {
+            entry = (HM*)malloc(sizeof(HM));
+            entry->key = nums2[i][0];
+            entry->value = nums2[i][1];
+            HASH_ADD_INT(hm, key, entry);
+        }
+    }
+    HASH_SRT(hh, hm, soi);
+    int num = HASH_COUNT(hm);
+    *returnSize = num;
+
+    int** result = (int**)malloc(num * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(num * sizeof(int));
+
+    int c = 0;
+    HM* entry;
+    for (entry = hm; entry != NULL; entry = entry->hh.next) {
+        result[c] = (int*)malloc(2 * sizeof(int));
+        result[c][0] = entry->key;
+        result[c][1] = entry->value;
+        (*returnColumnSizes)[c] = 2;
+        c++;
+    }
+    return result;
+}
