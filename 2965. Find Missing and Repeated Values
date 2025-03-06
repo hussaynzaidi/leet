@@ -1,0 +1,21 @@
+int* findMissingAndRepeatedValues(int** grid, int gridSize, int* gridColSize, int* returnSize) {
+    long sum = 0, sqrSum = 0;
+    long total = gridSize * gridSize;
+    for(int i = 0; i < gridSize; i++)
+    {
+        for(int j = 0; j < gridColSize[i]; j++)
+        {
+            sum+= grid[i][j];
+            sqrSum+= (grid[i][j] * grid[i][j]);
+        }
+    }
+    long sumDiff = sum - (total * (total + 1)) /2;
+    long sqrDiff = sqrSum - (total * (total + 1) * (2* total +1)) /6;
+    int r = (sqrDiff / sumDiff + sumDiff) / 2;
+    int m = (sqrDiff / sumDiff - sumDiff) / 2;
+
+    *returnSize = 2;
+    int *a =(int*) malloc(sizeof(int) * 2);
+    a[0] = r; a[1] = m;
+    return a;    
+}
