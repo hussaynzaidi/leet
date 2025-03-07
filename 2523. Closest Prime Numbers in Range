@@ -1,0 +1,30 @@
+int* closestPrimes(int left, int right, int* returnSize) {
+    *returnSize = 2;
+    int* result = (int*)malloc(sizeof(int) * 2);
+    result[0] = result[1] = -1;
+    if(right < 2) return result;
+
+    int* sieve = (int*)malloc(sizeof(int) * (right + 1));
+    memset(sieve, 1, (right + 1) * sizeof(int));
+    sieve[0] = sieve[1] = 0;
+
+    for (int p = 2; p * p <= right; p++) {
+        if (sieve[p]) {
+            for (int i = p * p; i <= right; i += p) {
+                sieve[i] = 0;
+            }
+        }
+    }
+    int m = INT_MAX, prev = -1;
+    for (int i = left; i <= right; i++) {
+        if (sieve[i]) {
+            if (prev != -1 && (i - prev) < m) {
+                m = i - prev;
+                result[0] = prev;
+                result[1] = i;
+            }
+            prev = i;
+        }
+    }
+    return result;
+}
