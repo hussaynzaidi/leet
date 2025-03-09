@@ -1,0 +1,15 @@
+int numberOfAlternatingGroups(int* colors, int colorsSize, int k) {
+    int count = 0;
+    for (int i = 0; i < colorsSize; i++) {
+        int valid = 1;
+        for (int j = 0; j < k - 1; j++) {
+            if (colors[(i + j) % colorsSize] ==
+                colors[(i + j + 1) % colorsSize]) {
+                valid = 0;
+            }
+        }
+        if (valid)
+            count++;
+    }
+    return count;
+}
