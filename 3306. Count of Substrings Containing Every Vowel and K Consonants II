@@ -1,0 +1,49 @@
+#define MAX_N 100005
+
+int isVowel(char c) {
+    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
+}
+
+long atLeastK(const char* word, int k, int wordLength) {
+    long numValidSubstrings = 0;
+    int start = 0, end = 0;
+    int vowelCount[26] = {0};
+    int consonantCount = 0;
+    int uniqueVowels = 0;
+
+    while (end < wordLength) {
+        char newLetter = word[end];
+
+        if (isVowel(newLetter)) {
+            if (vowelCount[newLetter - 'a'] == 0)
+                uniqueVowels++;
+            vowelCount[newLetter - 'a']++;
+        } else {
+            consonantCount++;
+        }
+
+        while (uniqueVowels == 5 && consonantCount >= k) {
+            numValidSubstrings += wordLength - end;
+            char startLetter = word[start];
+
+            if (isVowel(startLetter)) {
+                vowelCount[startLetter - 'a']--;
+                if (vowelCount[startLetter - 'a'] == 0)
+                    uniqueVowels--;
+            } else {
+                consonantCount--;
+            }
+
+            start++;
+        }
+
+        end++;
+    }
+
+    return numValidSubstrings;
+}
+
+long long countOfSubstrings(char* word, int k) {
+    int wordLength = strlen(word);
+    return atLeastK(word, k, wordLength) - atLeastK(word, k + 1, wordLength);
+}
