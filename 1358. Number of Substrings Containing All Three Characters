@@ -1,0 +1,12 @@
+int numberOfSubstrings(char* s) {
+    int len = strlen(s);
+    int lastPos[3] = {-1, -1, -1};
+    int total = 0;
+    for (int pos = 0; pos < len; pos++) {
+        lastPos[s[pos] - 'a'] = pos;
+        int x = (lastPos[1] < lastPos[2]) ? lastPos[1] : lastPos[2];
+
+        total += 1 + ((lastPos[0] < x) ? lastPos[0] : x);
+    }
+    return total;
+}
