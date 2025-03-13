@@ -1,0 +1,37 @@
+bool canFormZeroArray(int * nums, int numsSize, int** queries, int k)
+{
+    int sum = 0;
+    int* diff = (int*)malloc(sizeof(int) * (numsSize + 1));
+   memset(diff, 0, sizeof(int) * (numsSize + 1));
+
+    for(int i = 0; i < k; i++)
+    {
+         diff[queries[i][0]] += queries[i][2];
+         diff[queries[i][1] + 1] -= queries[i][2];
+    }
+    for(int i = 0; i < numsSize; i++)
+    {
+        sum += diff[i];
+        if(sum < nums[i]){
+            free(diff);  return false;
+        }
+    }
+    free(diff);
+    return true;
+}
+
+int minZeroArray(int* nums, int numsSize, int** queries, int queriesSize, int* queriesColSize) {
+    int l = 0, r = queriesSize;
+
+    if(!canFormZeroArray(nums, numsSize, queries, r)) {
+        return -1;
+    }
+    while(l <= r){
+        int m = l+(r -l)/2;
+        if(canFormZeroArray(nums, numsSize, queries, m)) {
+        r = m - 1;
+    }
+    else{l = m+1;}
+    }
+    return l;
+}
