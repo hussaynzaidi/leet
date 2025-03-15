@@ -1,0 +1,33 @@
+
+int maxElement(int* nums, int numsSize) {
+    int maxVal = nums[0];
+    for (int i = 1; i < numsSize; i++) {
+        if (nums[i] > maxVal) {
+            maxVal = nums[i];
+        }
+    }
+    return maxVal;
+}
+
+int minCapability(int* nums, int numsSize, int k) {
+    int minReward = 1, maxReward = maxElement(nums, numsSize);
+    
+    while (minReward < maxReward) {
+        int midReward = (minReward + maxReward) / 2;
+        int possibleThefts = 0;
+
+        for (int index = 0; index < numsSize; index++) {
+            if (nums[index] <= midReward) {
+                possibleThefts++;
+                index++;
+            }
+        }
+
+        if (possibleThefts >= k)
+            maxReward = midReward;
+        else
+            minReward = midReward + 1;
+    }
+
+    return minReward;
+}
