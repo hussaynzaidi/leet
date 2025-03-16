@@ -1,0 +1,32 @@
+long long repairCars(int* ranks, int ranksSize, int cars) {
+    int minRank = ranks[0], maxRank = ranks[0];
+    for (int i = 0; i < ranksSize; i++) {
+        if (ranks[i] < minRank) minRank = ranks[i];
+        if (ranks[i] > maxRank) maxRank = ranks[i];
+    }
+
+    int freq[101] = {0};
+    for (int i = 0; i < ranksSize; i++) {
+        freq[ranks[i]]++;
+    }
+
+    long long low = 1, high = (long long) minRank * cars * cars;
+
+    while (low < high) {
+        long long mid = (low + high) / 2;
+        long long carsRepaired = 0;
+
+        for (int rank = 1; rank <= maxRank; rank++) {
+            if (freq[rank] > 0) {
+                carsRepaired += freq[rank] * (long long) sqrt((double)mid / rank);
+            }
+        }
+
+        if (carsRepaired >= cars) {
+            high = mid;
+        } else {
+            low = mid + 1;
+        }
+    }
+    return low;
+}
