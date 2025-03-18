@@ -1,0 +1,15 @@
+int longestNiceSubarray(int* nums, int numsSize) {
+    int usedBits = 0, windowStart = 0, maxLength = 0;
+
+    for(int i = 0; i < numsSize; i++)
+    {
+        while((nums[i] & usedBits) != 0)
+        {
+            usedBits ^=nums[windowStart];
+            windowStart++;
+        }
+        usedBits |= nums[i];
+        maxLength = ((maxLength > (i - windowStart + 1)) ? maxLength : (i - windowStart + 1));
+    }
+    return maxLength;
+}
