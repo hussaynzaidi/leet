@@ -1,0 +1,16 @@
+int minOperations(int* nums, int numsSize) {
+    int c = 0, x = 0;
+    for (int i = 2; i < numsSize; i++) {
+        if (nums[i - 2] == 0) {
+            nums[i] = !nums[i];
+            nums[i - 2] = !nums[i - 2];
+            nums[i - 1] = !nums[i - 1];
+            c++;
+        }
+    }
+    if (nums[numsSize - 1] == 0 |
+        nums[numsSize - 2] == 0)
+        return -1;
+
+    return c;
+}
