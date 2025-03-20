@@ -1,0 +1,59 @@
+#define MAX_N 100000
+int parent[MAX_N];
+int depth[MAX_N];
+unsigned int componentCost[MAX_N];
+
+int find(int node) {
+    if (parent[node] == -1)
+        return node;
+    return parent[node] = find(parent[node]);
+}
+
+void unionNodes(int node1, int node2) {
+    int root1 = find(node1);
+    int root2 = find(node2);
+
+    if (root1 == root2)
+        return;
+
+    if (depth[root1] < depth[root2]) {
+        int temp = root1;
+        root1 = root2;
+        root2 = temp;
+    }
+
+    parent[root2] = root1;
+    if (depth[root1] == depth[root2])
+        depth[root1]++;
+}
+
+int* minimumCost(int n, int** edges, int edgesSize, int* edgesColSize,
+                 int** queries, int queriesSize, int* queriesColSize,
+                 int* returnSize) {
+    *returnSize = queriesSize;
+    int* answer = (int*)malloc(queriesSize * sizeof(int));
+    memset(parent, -1, sizeof(parent));
+    memset(depth, 0, sizeof(depth));
+    for (int i = 0; i < n; i++)
+        componentCost[i] = ~0;
+    for (int i = 0; i < edgesSize; i++) {
+        unionNodes(edges[i][0], edges[i][1]);
+    }
+    for (int i = 0; i < edgesSize; i++) {
+        int root = find(edges[i][0]);
+        componentCost[root] &= edges[i][2];
+    }
+    for (int i = 0; i < queriesSize; i++) {
+        int start = queries[i][0];
+        int end = queries[i][1];
+
+        if (find(start) != find(end)) {
+            answer[i] = -1;
+        } else {
+            int root = find(start);
+            answer[i] = componentCost[root];
+        }
+    }
+
+    return answer;
+}
