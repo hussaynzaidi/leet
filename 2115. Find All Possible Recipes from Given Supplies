@@ -1,0 +1,149 @@
+#define MAX_RECIPES 1000
+typedef struct {
+    char key[21];
+    UT_hash_handle hh;
+} HashSet;
+
+typedef struct {
+    char key[21];
+    int index;
+    UT_hash_handle hh;
+} HashMap;
+
+typedef struct Dependency {
+    char key[21];
+    char** recipes;
+    int count;
+    int capacity;
+    UT_hash_handle hh;
+} DependencyGraph;
+
+HashSet* availableSupplies = NULL;
+HashMap* recipeToIndex = NULL;
+DependencyGraph* dependencyGraph = NULL;
+
+void addToHashSet(HashSet** set, char* key) {
+    HashSet* entry;
+    HASH_FIND_STR(*set, key, entry);
+    if (!entry) {
+        entry = (HashSet*)malloc(sizeof(HashSet));
+        strcpy(entry->key, key);
+        HASH_ADD_STR(*set, key, entry);
+    }
+}
+
+int existsInHashSet(HashSet* set, char* key) {
+    HashSet* entry;
+    HASH_FIND_STR(set, key, entry);
+    return entry != NULL;
+}
+
+void addToHashMap(HashMap** map, char* key, int value) {
+    HashMap* entry;
+    HASH_FIND_STR(*map, key, entry);
+    if (!entry) {
+        entry = (HashMap*)malloc(sizeof(HashMap));
+        strcpy(entry->key, key);
+        entry->index = value;
+        HASH_ADD_STR(*map, key, entry);
+    }
+}
+
+int getFromHashMap(HashMap* map, char* key) {
+    HashMap* entry;
+    HASH_FIND_STR(map, key, entry);
+    return entry ? entry->index : -1;
+}
+
+void addDependency(char* ingredient, char* recipe) {
+    DependencyGraph* entry;
+    HASH_FIND_STR(dependencyGraph, ingredient, entry);
+    if (!entry) {
+        entry = (DependencyGraph*)malloc(sizeof(DependencyGraph));
+        strcpy(entry->key, ingredient);
+        entry->count = 0;
+        entry->capacity = 2;
+        entry->recipes = (char**)malloc(entry->capacity * sizeof(char*));
+        HASH_ADD_STR(dependencyGraph, key, entry);
+    }
+    if (entry->count == entry->capacity) {
+        entry->capacity *= 2;
+        entry->recipes =
+            (char**)realloc(entry->recipes, entry->capacity * sizeof(char*));
+    }
+    entry->recipes[entry->count++] = strdup(recipe);
+}
+
+DependencyGraph* getDependencies(char* ingredient) {
+    DependencyGraph* entry;
+    HASH_FIND_STR(dependencyGraph, ingredient, entry);
+    return entry;
+}
+char** findAllRecipes(char** recipes, int recipesSize, char*** ingredients,
+                      int ingredientsSize, int* ingredientsColSize,
+                      char** supplies, int suppliesSize, int* returnSize) {
+    *returnSize = 0;
+    char** createdRecipes = (char**)malloc(recipesSize * sizeof(char*));
+    availableSupplies = NULL;
+    recipeToIndex = NULL;
+    dependencyGraph = NULL;
+
+    for (int i = 0; i < suppliesSize; i++) {
+        addToHashSet(&availableSupplies, supplies[i]);
+    }
+
+    for (int i = 0; i < recipesSize; i++) {
+        addToHashMap(&recipeToIndex, recipes[i], i);
+    }
+
+    int* inDegree = (int*)calloc(recipesSize, sizeof(int));
+    for (int i = 0; i < recipesSize; i++) {
+        for (int j = 0; j < ingredientsColSize[i]; j++) {
+            char* ingredient = ingredients[i][j];
+            if (!existsInHashSet(availableSupplies, ingredient)) {
+
+                int idx = getFromHashMap(recipeToIndex, ingredient);
+                if (idx != -1) {
+
+                    addDependency(ingredient, recipes[i]);
+                    inDegree[i]++;
+                } else {
+                    inDegree[i]++;
+                }
+            }
+        }
+    }
+
+    int queue[MAX_RECIPES], front = 0, back = 0;
+    for (int i = 0; i < recipesSize; i++) {
+        if (inDegree[i] == 0) {
+            queue[back++] = i;
+        }
+    }
+
+    while (front < back) {
+        int idx = queue[front++];
+        char* recipe = recipes[idx];
+        createdRecipes[(*returnSize)++] = strdup(recipe);
+
+        addToHashSet(&availableSupplies, recipe);
+
+        DependencyGraph* entry;
+        HASH_FIND_STR(dependencyGraph, recipe, entry);
+        if (entry) {
+            for (int i = 0; i < entry->count; i++) {
+                char* dependent = entry->recipes[i];
+                int depIdx = getFromHashMap(recipeToIndex, dependent);
+
+                if (depIdx != -1) {
+                    inDegree[depIdx]--;
+                    if (inDegree[depIdx] == 0) {
+                        queue[back++] = depIdx;
+                    }
+                }
+            }
+        }
+    }
+    free(inDegree);
+    return createdRecipes;
+}
