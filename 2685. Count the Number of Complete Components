@@ -1,0 +1,93 @@
+#define MAX_NODES 1000
+typedef struct {
+    int adj[MAX_NODES][MAX_NODES];
+    int degree[MAX_NODES];
+    int size;
+} Graph;
+
+typedef struct {
+    int data[MAX_NODES];
+    int front, rear;
+} Queue;
+
+void initQueue(Queue* q) {
+    q->front = q->rear = 0;
+}
+
+void enqueue(Queue* q, int value) {
+    q->data[q->rear++] = value;
+}
+
+int dequeue(Queue* q) {
+    return q->data[q->front++];
+}
+
+bool isEmpty(Queue* q) {
+    return q->front == q->rear;
+}
+
+void initGraph(Graph* g, int n) {
+    g->size = n;
+    for (int i = 0; i < n; i++) {
+        g->degree[i] = 0;
+        for (int j = 0; j < n; j++) {
+            g->adj[i][j] = 0;
+        }
+    }
+}
+
+void addEdge(Graph* g, int u, int v) {
+    g->adj[u][v] = 1;
+    g->adj[v][u] = 1;
+    g->degree[u]++;
+    g->degree[v]++;
+}
+
+int countCompleteComponents(int n, int ** edges, int edgesSize, int* edgesColSize) {
+    Graph g;
+    initGraph(&g, n);
+    
+    for (int i = 0; i < edgesSize; i++) {
+        addEdge(&g, edges[i][0], edges[i][1]);
+    }
+    
+    bool visited[MAX_NODES] = {false};
+    int completeComponents = 0;
+    
+    for (int i = 0; i < n; i++) {
+        if (!visited[i]) {
+            Queue q;
+            initQueue(&q);
+            enqueue(&q, i);
+            visited[i] = true;
+            
+            int component[MAX_NODES], componentSize = 0;
+            
+            while (!isEmpty(&q)) {
+                int node = dequeue(&q);
+                component[componentSize++] = node;
+                
+                for (int j = 0; j < n; j++) {
+                    if (g.adj[node][j] && !visited[j]) {
+                        visited[j] = true;
+                        enqueue(&q, j);
+                    }
+                }
+            }
+            
+            bool isComplete = true;
+            for (int k = 0; k < componentSize; k++) {
+                if (g.degree[component[k]] != componentSize - 1) {
+                    isComplete = false;
+                    break;
+                }
+            }
+            
+            if (isComplete) {
+                completeComponents++;
+            }
+        }
+    }
+    
+    return completeComponents;
+}
