@@ -1,0 +1,58 @@
+#define MOD 1000000007
+typedef long long ll;
+
+int countPaths(int n, int** roads, int roadsSize, int* roadsColSize) {
+    ll*** dp = (ll***)malloc(n * sizeof(ll**));
+    for (int i = 0; i < n; i++) {
+        dp[i] = (ll**)malloc(n * sizeof(ll*));
+        for (int j = 0; j < n; j++) {
+            dp[i][j] = (ll*)malloc(2 * sizeof(ll));
+            if (i != j) {
+                dp[i][j][0] = LLONG_MAX; // Large initial time
+                dp[i][j][1] = 0;         // No paths initially
+            } else {
+                dp[i][j][0] = 0;         // Distance from node to itself is 0
+                dp[i][j][1] = 1;         // Only one way (staying at the node)
+            }
+        }
+    }
+
+    // Initialize direct roads from input
+    for (int i = 0; i < roadsSize; i++) {
+        int startNode = roads[i][0];
+        int endNode = roads[i][1];
+        int travelTime = roads[i][2];
+
+        dp[startNode][endNode][0] = travelTime;
+        dp[endNode][startNode][0] = travelTime;
+        dp[startNode][endNode][1] = 1;
+        dp[endNode][startNode][1] = 1;
+    }
+    for (int mid = 0; mid < n; mid++) {
+        for (int src = 0; src < n; src++) {
+            for (int dest = 0; dest < n; dest++) {
+                if (src != mid && dest != mid && dp[src][mid][0] != LLONG_MAX && dp[mid][dest][0] != LLONG_MAX) {
+                    ll newTime = dp[src][mid][0] + dp[mid][dest][0];
+
+                    if (newTime < dp[src][dest][0]) {
+                        dp[src][dest][0] = newTime;
+                        dp[src][dest][1] = (dp[src][mid][1] * dp[mid][dest][1]) % MOD;
+                    } else if (newTime == dp[src][dest][0]) {
+                        dp[src][dest][1] = (dp[src][dest][1] + (dp[src][mid][1] * dp[mid][dest][1]) % MOD) % MOD;
+                    }
+                }
+            }
+        }
+    }
+
+    int result = dp[n - 1][0][1];
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            free(dp[i][j]);
+        }
+        free(dp[i]);
+    }
+    free(dp);
+
+    return result;
+}
