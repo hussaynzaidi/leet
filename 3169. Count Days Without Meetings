@@ -1,0 +1,21 @@
+int comp(const void* a, const void* b) {
+    int* arr1 = *(int**)a;
+    int* arr2 = *(int**)b;
+    return arr1[0] - arr2[0];
+}
+int countDays(int days, int** meetings, int meetingsSize,
+              int* meetingsColSize) {
+    int freed = 0, lastend = 0;
+
+    qsort(meetings, meetingsSize, sizeof(int*), comp);
+
+    for (int i = 0; i < meetingsSize; i++) {
+        int s = meetings[i][0], e = meetings[i][1];
+
+        if (s > lastend + 1) {
+            freed += s - lastend - 1;
+        }
+        lastend = (lastend > e) ? lastend : e;
+    }
+    return freed += days - lastend;
+}
