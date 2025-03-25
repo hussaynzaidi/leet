@@ -1,0 +1,31 @@
+int sorting_dim;
+
+int comp(const void *a, const void *b) {
+    int *rectA = *(int **)a;
+    int *rectB = *(int **)b;
+    return rectA[sorting_dim] - rectB[sorting_dim];
+}
+
+bool checkCuts(int** rectangles, int rectanglesSize, int dim) {
+    int gapCount = 0;
+    sorting_dim = dim;
+
+    qsort(rectangles, rectanglesSize, sizeof(int*), comp);
+
+    int furthestEnd = rectangles[0][dim + 2];
+
+    for (int i = 1; i < rectanglesSize; i++) {
+        if (furthestEnd <= rectangles[i][dim]) {
+            gapCount++;
+        }
+        if (furthestEnd < rectangles[i][dim + 2]) {
+            furthestEnd = rectangles[i][dim + 2];
+        }
+    }
+
+    return gapCount >= 2;
+}
+
+bool checkValidCuts(int n, int** rectangles, int rectanglesSize, int* rectanglesColSize) {
+    return checkCuts(rectangles, rectanglesSize, 0) || checkCuts(rectangles, rectanglesSize, 1);
+}
