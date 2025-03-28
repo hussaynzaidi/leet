@@ -1,0 +1,109 @@
+typedef struct {
+    int row, col, value;
+} Cell;
+
+typedef struct {
+    int index, value;
+} Query;
+
+typedef struct {
+    int *parent;
+    int *size;
+} UnionFind;
+
+void initUnionFind(UnionFind *uf, int n) {
+    uf->parent = (int *)malloc(n * sizeof(int));
+    uf->size = (int *)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        uf->parent[i] = -1;
+        uf->size[i] = 1;
+    }
+}
+
+int find(UnionFind *uf, int node) {
+    if (uf->parent[node] < 0) return node;
+    return uf->parent[node] = find(uf, uf->parent[node]);
+}
+
+void unionNodes(UnionFind *uf, int nodeA, int nodeB) {
+    int rootA = find(uf, nodeA);
+    int rootB = find(uf, nodeB);
+    if (rootA == rootB) return;
+    if (uf->size[rootA] > uf->size[rootB]) {
+        uf->parent[rootB] = rootA;
+        uf->size[rootA] += uf->size[rootB];
+    } else {
+        uf->parent[rootA] = rootB;
+        uf->size[rootB] += uf->size[rootA];
+    }
+}
+
+int getSize(UnionFind *uf, int node) {
+    return uf->size[find(uf, node)];
+}
+
+int compareCells(const void *a, const void *b) {
+    return ((Cell *)a)->value - ((Cell *)b)->value;
+}
+
+int compareQueries(const void *a, const void *b) {
+    return ((Query *)a)->value - ((Query *)b)->value;
+}
+
+int* maxPoints(int** grid, int gridSize, int* gridColSize, int* queries, int queriesSize, int* returnSize) {
+    int rowCount = gridSize, colCount = gridColSize[0];
+    int totalCells = rowCount * colCount;
+
+    Query *sortedQueries = (Query *)malloc(queriesSize * sizeof(Query));
+    for (int i = 0; i < queriesSize; i++) {
+        sortedQueries[i].index = i;
+        sortedQueries[i].value = queries[i];
+    }
+    qsort(sortedQueries, queriesSize, sizeof(Query), compareQueries);
+
+    Cell *sortedCells = (Cell *)malloc(totalCells * sizeof(Cell));
+    for (int row = 0; row < rowCount; row++) {
+        for (int col = 0; col < colCount; col++) {
+            sortedCells[row * colCount + col] = (Cell){row, col, grid[row][col]};
+        }
+    }
+    qsort(sortedCells, totalCells, sizeof(Cell), compareCells);
+
+    UnionFind uf;
+    initUnionFind(&uf, totalCells);
+    int *result = (int *)malloc(queriesSize * sizeof(int));
+    *returnSize = queriesSize;
+
+    int cellIndex = 0;
+    int rowDirections[4] = {0, 0, 1, -1};
+    int colDirections[4] = {1, -1, 0, 0};
+
+    for (int i = 0; i < queriesSize; i++) {
+        int queryValue = sortedQueries[i].value;
+        while (cellIndex < totalCells && sortedCells[cellIndex].value < queryValue) {
+            int row = sortedCells[cellIndex].row;
+            int col = sortedCells[cellIndex].col;
+            int cellId = row * colCount + col;
+
+            for (int d = 0; d < 4; d++) {
+                int newRow = row + rowDirections[d];
+                int newCol = col + colDirections[d];
+
+                if (newRow >= 0 && newRow < rowCount &&
+                    newCol >= 0 && newCol < colCount &&
+                    grid[newRow][newCol] < queryValue) {
+                    unionNodes(&uf, cellId, newRow * colCount + newCol);
+                }
+            }
+            cellIndex++;
+        }
+        result[sortedQueries[i].index] = queryValue > grid[0][0] ? getSize(&uf, 0) : 0;
+    }
+
+    free(sortedQueries);
+    free(sortedCells);
+    free(uf.parent);
+    free(uf.size);
+    
+    return result;
+}
