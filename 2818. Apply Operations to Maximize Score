@@ -1,0 +1,102 @@
+typedef long long ll;
+#define MOD 1000000007
+
+int* globalNums;
+
+ll power(ll base, ll exponent) {
+    ll res = 1;
+    while (exponent) {
+        if (exponent & 1)
+            res = (res * base) % MOD;
+        base = (base * base) % MOD;
+        exponent >>= 1;
+    }
+    return res;
+}
+
+void sieve(int limit, int* spf) {
+    for (int i = 0; i <= limit; i++)
+        spf[i] = i;
+    for (int i = 2; i * i <= limit; i++) {
+        if (spf[i] == i) {
+            for (int j = i * i; j <= limit; j += i) {
+                if (spf[j] == j)
+                    spf[j] = i;
+            }
+        }
+    }
+}
+void computePrimeScores(int* nums, int numsSize, int* primeScores, int* spf) {
+    for (int i = 0; i < numsSize; i++) {
+        int num = nums[i];
+        while (num > 1) {
+            int primeFactor = spf[num];
+            primeScores[i]++;
+            while (num % primeFactor == 0)
+                num /= primeFactor;
+        }
+    }
+}
+
+int compare(const void* a, const void* b) {
+    int idx1 = *(const int*)a;
+    int idx2 = *(const int*)b;
+    return globalNums[idx2] - globalNums[idx1];
+}
+
+int maximumScore(int* nums, int numsSize, int k) {
+    int maxElement = 0;
+    for (int i = 0; i < numsSize; i++) {
+        if (nums[i] > maxElement)
+            maxElement = nums[i];
+    }
+
+    int* spf = (int*)malloc((maxElement + 1) * sizeof(int));
+    sieve(maxElement, spf);
+
+    int* primeScores = (int*)calloc(numsSize, sizeof(int));
+    computePrimeScores(nums, numsSize, primeScores, spf);
+    free(spf);
+    int* nextDominant = (int*)malloc(numsSize * sizeof(int));
+    int* prevDominant = (int*)malloc(numsSize * sizeof(int));
+    for (int i = 0; i < numsSize; i++) {
+        nextDominant[i] = numsSize;
+        prevDominant[i] = -1;
+    }
+    int* stack = (int*)malloc(numsSize * sizeof(int));
+    int top = -1;
+    for (int i = 0; i < numsSize; i++) {
+        while (top >= 0 && primeScores[stack[top]] < primeScores[i]) {
+            nextDominant[stack[top--]] = i;
+        }
+        prevDominant[i] = (top >= 0) ? stack[top] : -1;
+        stack[++top] = i;
+    }
+    free(stack);
+    ll* numOfSubarrays = (ll*)malloc(numsSize * sizeof(ll));
+    for (int i = 0; i < numsSize; i++) {
+        numOfSubarrays[i] = (ll)(nextDominant[i] - i) * (i - prevDominant[i]);
+    }
+
+    int* indices = (int*)malloc(numsSize * sizeof(int));
+    for (int i = 0; i < numsSize; i++)
+        indices[i] = i;
+    globalNums = nums;
+    qsort(indices, numsSize, sizeof(int), compare);
+
+    ll score = 1;
+    int idx = 0;
+    while (k > 0) {
+        int index = indices[idx++];
+        ll operations = (k < numOfSubarrays[index]) ? k : numOfSubarrays[index];
+        score = (score * power(nums[index], operations)) % MOD;
+        k -= operations;
+    }
+    free(primeScores);
+    free(nextDominant);
+    free(prevDominant);
+    free(numOfSubarrays);
+    free(indices);
+
+    return (int)score;
+}
