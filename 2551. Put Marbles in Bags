@@ -1,0 +1,21 @@
+int cmp(const int* a, const int* b) { return (*a - *b); }
+long long putMarbles(int* weights, int weightsSize, int k) {
+
+    int n = weightsSize;
+    int* pairWeights = (int*)malloc((n - 1) * sizeof(int));
+
+    for (int i = 0; i < n - 1; ++i) {
+        pairWeights[i] = weights[i] + weights[i + 1];
+    }
+
+    qsort(pairWeights, n - 1, sizeof(int),
+          (int (*)(const void*, const void*))cmp);
+
+    long long answer = 0;
+    for (int i = 0; i < k - 1; ++i) {
+        answer += pairWeights[n - 2 - i] - pairWeights[i];
+    }
+
+    free(pairWeights);
+    return answer;
+}
