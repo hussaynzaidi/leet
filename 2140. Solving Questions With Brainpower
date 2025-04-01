@@ -1,0 +1,27 @@
+long long calculateMax(int idx, long long* memo, int size, int** questions) {
+    if (idx >= size) {
+        return 0;
+    }
+    if (memo[idx] != -1) {
+        return memo[idx];
+    } else {
+        if (idx == size - 1) {
+            memo[idx] = questions[idx][0];
+            return memo[idx];
+        } else {
+            long long skip = calculateMax(idx + 1, memo, size, questions);
+            long long solve =
+                questions[idx][0] + calculateMax(idx + questions[idx][1] + 1,
+                                                 memo, size, questions);
+            memo[idx] = (skip > solve) ? skip : solve;
+            return memo[idx];
+        }
+    }
+}
+
+long long mostPoints(int** questions, int questionsSize,
+                     int* questionsColSize) {
+    long long* memo = (long long*)malloc(sizeof(long long) * questionsSize);
+    memset(memo, -1, sizeof(long long) * questionsSize);
+    return calculateMax(0, memo, questionsSize, questions);
+}
