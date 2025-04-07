@@ -1,0 +1,19 @@
+bool canPartition(int* nums, int numsSize) {
+    int sum = 0;
+    for (int i = 0; i < numsSize; i++) {
+        sum += nums[i];
+    }
+    if (sum % 2 != 0) {
+        return false;
+    }
+    int ts = sum / 2;
+    bool* dp = (bool*)malloc(sizeof(bool) * (ts + 1));
+    memset(dp, 0, sizeof(bool) * (ts + 1));
+    dp[0] = true;
+    for (int i = 0; i < numsSize; i++) {
+        for (int j = ts; j >= nums[i]; j--) {
+            dp[j] = dp[j] || dp[j - nums[i]];
+        }
+    }
+    return dp[ts];
+}
