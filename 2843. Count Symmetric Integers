@@ -1,0 +1,28 @@
+int countSymmetricIntegers(int low, int high) {
+    // int count = 0;
+    // for(int i = low; i < high + 1; i++){
+    //     int n = floor(log10(abs(i))) + 1;
+    //     if(n % 2 == 0){
+    //         char s[6];
+    //         snprintf(s, sizeof(s), "%d", i);
+    //         int h1 = 0, h2 = 0;
+    //         for(int j = 0; j < n; j++){
+    //             if(j < (n /2 )) {h1 += s[j] - '0';} else {h2 += s[j] - '0';}
+    //         }
+    //         if(h1 == h2) {count++;}
+    //     }
+    // }
+    // return count;
+
+    int c = 0;
+    for(int i = low; i <= high; i++){
+        if(i < 100 && i % 11 == 0){c++;}
+
+        else if (1000 <= i && i < 10000){
+            int l = i / 1000 + (i % 1000) / 100;
+            int r = (i % 100) / 10 + i % 10;
+            if(l == r) {c++;}
+        }
+    }
+    return c;
+}
