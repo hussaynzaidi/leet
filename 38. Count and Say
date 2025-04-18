@@ -1,0 +1,56 @@
+typedef struct {
+    int freq;
+    char digit;
+} Info;
+
+char* to_string(Info* fc, int size) {
+    char* result = (char*)malloc(size * 2 + 1);
+    int pos = 0;
+    for (int i = 0; i < size; i++) {
+        pos += sprintf(result + pos, "%d%c", fc[i].freq, fc[i].digit);
+    }
+    result[pos] = '\0';
+    return result;
+}
+
+char* countAndSay(int n) {
+    if (n == 1) {
+        char* base = (char*)malloc(2);
+        strcpy(base, "1");
+        return base;
+    }
+
+    char* s1 = (char*)malloc(3);
+    strcpy(s1, "11");
+
+    for (int i = 3; i <= n; i++) {
+        int len = strlen(s1);
+        Info* fc = (Info*)malloc(len * sizeof(Info));
+        int fcSize = 0;
+
+        char c = s1[0];
+        int count = 1;
+
+        for (int j = 1; j < len; j++) {
+            if (s1[j] == c) {
+                count++;
+            } else {
+                fc[fcSize].freq = count;
+                fc[fcSize].digit = c;
+                fcSize++;
+                c = s1[j];
+                count = 1;
+            }
+        }
+        // push the last group
+        fc[fcSize].freq = count;
+        fc[fcSize].digit = c;
+        fcSize++;
+
+        free(s1);
+        s1 = to_string(fc, fcSize);
+        free(fc);
+    }
+
+    return s1;
+}
