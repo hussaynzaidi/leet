@@ -1,0 +1,24 @@
+int cmp(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+long long lower_bound_pairs(int* nums, int numsSize, int value) {
+    int left = 0, right = numsSize - 1;
+    long long result = 0;
+
+    while (left < right) {
+        int sum = nums[left] + nums[right];
+        if (sum < value) {
+            result += (right - left);
+            left++;
+        } else {
+            right--;
+        }
+    }
+    return result;
+}
+
+long long countFairPairs(int* nums, int numsSize, int lower, int upper) {
+    qsort(nums, numsSize, sizeof(int), cmp);
+    return lower_bound_pairs(nums, numsSize, upper + 1) - lower_bound_pairs(nums, numsSize, lower);
+}
