@@ -1,0 +1,38 @@
+typedef struct {
+    int key;            // the number the rabbit says
+    int count;          // number of rabbits that said this number
+    UT_hash_handle hh;  // makes this structure hashable
+} HashEntry;
+
+int numRabbits(int* nums, int numsSize) {
+    HashEntry* map = NULL;
+    HashEntry* entry;
+    int total = 0;
+
+    // Count frequency of each number
+    for (int i = 0; i < numsSize; i++) {
+        int num = nums[i];
+        HASH_FIND_INT(map, &num, entry);
+        if (entry == NULL) {
+            entry = (HashEntry*)malloc(sizeof(HashEntry));
+            entry->key = num;
+            entry->count = 1;
+            HASH_ADD_INT(map, key, entry);
+        } else {
+            entry->count++;
+        }
+    }
+
+    // Calculate total rabbits
+    HashEntry* current_entry;
+    HashEntry* tmp;
+    HASH_ITER(hh, map, current_entry, tmp) {
+        int group_size = current_entry->key + 1;
+        int groups = (int)ceil((double)current_entry->count / group_size);
+        total += groups * group_size;
+        HASH_DEL(map, current_entry);
+        free(current_entry);
+    }
+
+    return total;
+}
