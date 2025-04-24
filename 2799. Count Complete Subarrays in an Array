@@ -1,0 +1,40 @@
+#define MAX 100001
+
+int countDistinct(int* nums, int n) {
+    int count = 0;
+    int freq[MAX] = {0};
+    for (int i = 0; i < n; i++) {
+        if (freq[nums[i]] == 0) count++;
+        freq[nums[i]]++;
+    }
+    return count;
+}
+
+int countCompleteSubarrays(int* nums, int n) {
+    int totalDistinct = countDistinct(nums, n);
+    int res = 0;
+    int freq[MAX] = {0};
+    int distinctInWindow = 0;
+    int right = 0;
+
+    for (int left = 0; left < n; left++) {
+        if (left > 0) {
+            int remove = nums[left - 1];
+            freq[remove]--;
+            if (freq[remove] == 0) distinctInWindow--;
+        }
+
+        while (right < n && distinctInWindow < totalDistinct) {
+            int add = nums[right];
+            if (freq[add] == 0) distinctInWindow++;
+            freq[add]++;
+            right++;
+        }
+
+        if (distinctInWindow == totalDistinct) {
+            res += n - right + 1;
+        }
+    }
+
+    return res;
+}
