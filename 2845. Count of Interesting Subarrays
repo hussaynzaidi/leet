@@ -1,0 +1,23 @@
+int countInterestingSubarrays(int* nums, int numsSize, int modulo, int k) {
+    int count = 0;
+    int equals = 0;
+
+    // We'll use a fixed-size hash map since modulo is reasonably small (e.g., ≤ 1000)
+    int* mpp = (int*)calloc(modulo, sizeof(int));
+    mpp[0] = 1;
+
+    for (int i = 0; i < numsSize; i++) {
+        if (nums[i] % modulo == k) {
+            equals++;
+        }
+
+        int rem = equals % modulo;
+        int needed = (rem - k + modulo) % modulo;
+
+        count += mpp[needed];
+        mpp[rem]++;
+    }
+
+    free(mpp);
+    return count;
+}
