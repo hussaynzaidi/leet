@@ -1,0 +1,14 @@
+long long countSubarrays(int* nums, int numsSize, long long k) {
+    int l = 0;
+    long long total = 0, res = 0;
+
+    for (int r = 0; r < numsSize; r++) {
+        total += nums[r];
+        while (l <= r && total * (r - l + 1) >= k) {
+            total -= nums[l];
+            l++;
+        }
+        res += r - l + 1;
+    }
+    return res;
+}
