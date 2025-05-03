@@ -1,0 +1,21 @@
+#include <limits.h>
+
+int getRotation(int* tops, int* bottoms, int n, int target) {
+    int rotateTop = 0, rotateBottom = 0;
+    for (int i = 0; i < n; i++) {
+        if (tops[i] != target && bottoms[i] != target) {
+            return INT_MAX;
+        }
+        if (tops[i] != target) rotateTop++;
+        if (bottoms[i] != target) rotateBottom++;
+    }
+    return (rotateTop < rotateBottom) ? rotateTop : rotateBottom;
+}
+
+int minDominoRotations(int* tops, int topsSize, int* bottoms, int bottomsSize) {
+    int res = getRotation(tops, bottoms, topsSize, tops[0]);
+    if (bottoms[0] != tops[0]) {
+        res = (res < getRotation(tops, bottoms, topsSize, bottoms[0])) ? res : getRotation(tops, bottoms, topsSize, bottoms[0]);
+    }
+    return (res == INT_MAX) ? -1 : res;
+}
