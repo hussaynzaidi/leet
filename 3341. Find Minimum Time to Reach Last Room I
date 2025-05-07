@@ -1,0 +1,57 @@
+typedef struct {
+    int cost;
+    int row;
+    int col;
+} Node;
+
+int cmp(const void* a, const void* b) {
+    return ((Node*)a)->cost - ((Node*)b)->cost;
+}
+
+int minTimeToReach(int** moveTime, int moveTimeSize, int* moveTimeColSize) {
+    int n = moveTimeSize;
+    int m = moveTimeColSize[0];
+    int** visited = malloc(n * sizeof(int*));
+    for (int i = 0; i < n; i++) {
+        visited[i] = calloc(m, sizeof(int));
+    }
+
+    Node* heap = malloc(n * m * sizeof(Node));
+    int heapSize = 0;
+    heap[heapSize++] = (Node){0, 0, 0};
+
+    while (heapSize > 0) {
+        qsort(heap, heapSize, sizeof(Node), cmp);
+        Node cur = heap[0];
+        for (int i = 1; i < heapSize; i++) heap[i - 1] = heap[i];
+        heapSize--;
+
+        int r = cur.row;
+        int c = cur.col;
+        if (r == n - 1 && c == m - 1) {
+            for (int i = 0; i < n; i++) free(visited[i]);
+            free(visited);
+            free(heap);
+            return cur.cost;
+        }
+
+        if (visited[r][c]) continue;
+        visited[r][c] = 1;
+
+        int dirs[4][2] = {{-1,0},{1,0},{0,-1},{0,1}};
+        for (int d = 0; d < 4; d++) {
+            int nr = r + dirs[d][0];
+            int nc = c + dirs[d][1];
+            if (nr < 0 || nr >= n || nc < 0 || nc >= m) continue;
+            if (visited[nr][nc]) continue;
+            int path = cur.cost > moveTime[nr][nc] ? cur.cost : moveTime[nr][nc];
+            path += 1;
+            heap[heapSize++] = (Node){path, nr, nc};
+        }
+    }
+
+    for (int i = 0; i < n; i++) free(visited[i]);
+    free(visited);
+    free(heap);
+    return -1;
+}
