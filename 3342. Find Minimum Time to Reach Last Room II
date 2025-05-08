@@ -1,0 +1,86 @@
+typedef struct {
+    int time;
+    int x;
+    int y;
+    int steps;
+} Node;
+
+void heapifyUp(Node* heap, int i) {
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (heap[p].time <= heap[i].time) break;
+        Node tmp = heap[i];
+        heap[i] = heap[p];
+        heap[p] = tmp;
+        i = p;
+    }
+}
+
+void heapifyDown(Node* heap, int size, int i) {
+    while (2 * i + 1 < size) {
+        int j = 2 * i + 1;
+        if (j + 1 < size && heap[j + 1].time < heap[j].time) j++;
+        if (heap[i].time <= heap[j].time) break;
+        Node tmp = heap[i];
+        heap[i] = heap[j];
+        heap[j] = tmp;
+        i = j;
+    }
+}
+
+int minTimeToReach(int** moveTime, int moveTimeSize, int* moveTimeColSize) {
+    int n = moveTimeSize;
+    int m = moveTimeColSize[0];
+
+    char** visited = malloc(n * sizeof(char*));
+    for (int i = 0; i < n; i++) {
+        visited[i] = calloc(m, sizeof(char));
+    }
+
+    Node* heap = malloc(n * m * sizeof(Node));
+    int size = 0;
+
+    heap[size++] = (Node){0, 0, 0, 0};
+    heapifyUp(heap, size - 1);
+
+    int dx[4] = {-1, 1, 0, 0};
+    int dy[4] = {0, 0, -1, 1};
+
+    while (size > 0) {
+        Node cur = heap[0];
+        heap[0] = heap[--size];
+        heapifyDown(heap, size, 0);
+
+        int x = cur.x;
+        int y = cur.y;
+
+        if (visited[x][y]) continue;
+        visited[x][y] = 1;
+
+        if (x == n - 1 && y == m - 1) {
+            for (int i = 0; i < n; i++) free(visited[i]);
+            free(visited);
+            free(heap);
+            return cur.time;
+        }
+
+        for (int d = 0; d < 4; d++) {
+            int nx = x + dx[d];
+            int ny = y + dy[d];
+            if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
+            if (visited[nx][ny]) continue;
+
+            int extra = ((cur.steps + 1) % 2 == 1) ? 1 : 2;
+            int next_time = cur.time > moveTime[nx][ny] ? cur.time : moveTime[nx][ny];
+            next_time += extra;
+
+            heap[size] = (Node){next_time, nx, ny, cur.steps + 1};
+            heapifyUp(heap, size++);
+        }
+    }
+
+    for (int i = 0; i < n; i++) free(visited[i]);
+    free(visited);
+    free(heap);
+    return -1;
+}
