@@ -1,0 +1,9 @@
+bool threeConsecutiveOdds(int* arr, int arrSize) {
+    for(int r = 2; r < arrSize; r++ ){
+        if( arr[r] % 2 == 1 && arr[r-1] % 2 == 1 && arr[r-2] % 2 == 1){
+            return true;
+        }
+    }
+    return false;
+
+}
