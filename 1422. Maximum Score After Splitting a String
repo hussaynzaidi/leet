@@ -1,0 +1,25 @@
+int maxScore(char* s) {
+    int ones = 0, zeros = 0, max = 0, i = 0;
+
+    while (s[i] != '\0') {
+        if (s[i] == '1') {
+            ones++;
+        }
+        i++;
+    }
+
+    int len = i;
+    int leftZeros = 0, rightOnes = ones;
+
+    for (i = 0; i < len - 1; i++) {
+        if (s[i] == '0') {
+            leftZeros++;
+        } else {
+            rightOnes--;
+        }
+        int score = leftZeros + rightOnes;
+        if (score > max) max = score;
+    }
+
+    return max;
+}
