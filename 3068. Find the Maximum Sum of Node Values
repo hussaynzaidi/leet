@@ -1,0 +1,24 @@
+#include <limits.h>
+#define LL long long
+#define MAXN 100005
+
+LL max(LL a, LL b) {
+    return a > b ? a : b;
+}
+
+long long maximumValueSum(int* nums, int numsSize, int k, int** edges, int edgesSize, int* edgesColSize) {
+    LL dp[MAXN][2];
+    
+    dp[numsSize][1] = 0;
+    dp[numsSize][0] = LLONG_MIN;  // -∞ to force even ops
+
+    for (int index = numsSize - 1; index >= 0; index--) {
+        for (int isEven = 0; isEven <= 1; isEven++) {
+            LL op1 = dp[index + 1][isEven ^ 1] + ((LL)nums[index] ^ k);  // apply XOR
+            LL op2 = dp[index + 1][isEven] + nums[index];               // don't apply XOR
+            dp[index][isEven] = max(op1, op2);
+        }
+    }
+
+    return dp[0][1];  // even number of XOR ops
+}
