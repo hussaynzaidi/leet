@@ -1,0 +1,27 @@
+int longestPalindrome(char** words, int wordsSize) {
+    int map[26][26] = {0};
+    int count = 0, hasCenter = 0;
+
+    for (int i = 0; i < wordsSize; i++) {
+        int a = words[i][0] - 'a';
+        int b = words[i][1] - 'a';
+
+        if (map[b][a] > 0) {
+            // Found a reverse pair
+            map[b][a]--;
+            count += 4;
+        } else {
+            map[a][b]++;
+        }
+    }
+
+    // Check for any remaining palindrome pairs like "aa", "bb", etc.
+    for (int i = 0; i < 26; i++) {
+        if (map[i][i] > 0) {
+            hasCenter = 1;
+            break;
+        }
+    }
+
+    return count + (hasCenter ? 2 : 0);
+}
