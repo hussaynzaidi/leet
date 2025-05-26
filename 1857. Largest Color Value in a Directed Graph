@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXN 100005
+
+typedef struct Node {
+    int v;
+    struct Node* next;
+} Node;
+
+Node* adj[MAXN];
+int vis[MAXN];                // 0 = unvisited, 1 = visiting, 2 = visited
+int count[MAXN][26];          // color counts for each node
+char* global_colors;
+
+// Add edge u -> v
+void addEdge(int u, int v) {
+    Node* node = (Node*)malloc(sizeof(Node));
+    node->v = v;
+    node->next = adj[u];
+    adj[u] = node;
+}
+
+// DFS to compute color frequencies and detect cycles
+int dfs(int node) {
+    if (vis[node] == 1) return -1;  // Cycle detected
+    if (vis[node] == 2) return 0;   // Already visited
+
+    vis[node] = 1;
+
+    Node* temp = adj[node];
+    while (temp) {
+        int res = dfs(temp->v);
+        if (res == -1) return -1;
+
+        for (int c = 0; c < 26; ++c) {
+            if (count[temp->v][c] > count[node][c]) {
+                count[node][c] = count[temp->v][c];
+            }
+        }
+        temp = temp->next;
+    }
+
+    int col = global_colors[node] - 'a';
+    count[node][col] += 1;
+    vis[node] = 2;
+
+    return 0;
+}
+
+int largestPathValue(char* colors, int** edges, int edgesSize, int* edgesColSize) {
+    int n = 0;
+    while (colors[n] != '\0') n++;  // safely find length
+
+    global_colors = colors;
+
+    // Initialize
+    for (int i = 0; i < n; i++) {
+        adj[i] = NULL;
+        vis[i] = 0;
+        for (int j = 0; j < 26; j++) {
+            count[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < edgesSize; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        addEdge(u, v);
+    }
+
+    int ans = 0;
+    for (int i = 0; i < n; ++i) {
+        if (dfs(i) == -1) return -1;
+
+        for (int j = 0; j < 26; ++j) {
+            if (count[i][j] > ans) ans = count[i][j];
+        }
+    }
+
+    return ans;
+}
