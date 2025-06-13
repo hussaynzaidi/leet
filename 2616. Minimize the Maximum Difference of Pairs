@@ -1,0 +1,32 @@
+int compare(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+int countValidPairs(int* nums, int numsSize, int threshold) {
+    int index = 0, count = 0;
+    while (index < numsSize - 1) {
+        if (nums[index + 1] - nums[index] <= threshold) {
+            count++;
+            index++;
+        }
+        index++;
+    }
+    return count;
+}
+
+int minimizeMax(int* nums, int numsSize, int p) {
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    int left = 0;
+    int right = nums[numsSize - 1] - nums[0];
+
+    while (left < right) {
+        int mid = left + (right - left) / 2;
+        if (countValidPairs(nums, numsSize, mid) >= p) {
+            right = mid;
+        } else {
+            left = mid + 1;
+        }
+    }
+    return left;
+}
