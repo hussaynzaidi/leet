@@ -1,0 +1,69 @@
+typedef struct {
+    int start;
+    int end;
+    int value;
+} Event;
+
+int compare_events(const void *a, const void *b) {
+    Event *e1 = (Event*)a;
+    Event *e2 = (Event*)b;
+    if (e1->end < e2->end) return -1;
+    if (e1->end > e2->end) return 1;
+    return 0;
+}
+
+int maxValue(int** events, int eventsSize, int* eventsColSize, int k_val) {
+    Event *evs = (Event*)malloc(eventsSize * sizeof(Event));
+    for (int i = 0; i < eventsSize; i++) {
+        evs[i].start = events[i][0];
+        evs[i].end = events[i][1];
+        evs[i].value = events[i][2];
+    }
+
+    qsort(evs, eventsSize, sizeof(Event), compare_events);
+
+    int *pre = (int*)malloc(eventsSize * sizeof(int));
+    for (int i = 0; i < eventsSize; i++) {
+        int low = 0;
+        int high = i - 1;
+        int idx = -1;
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            if (evs[mid].end < evs[i].start) {
+                idx = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        pre[i] = idx;
+    }
+
+    int *dp0 = (int*)calloc(eventsSize + 1, sizeof(int));
+    int *dp1 = (int*)malloc((eventsSize + 1) * sizeof(int));
+
+    for (int j = 1; j <= k_val; j++) {
+        dp1[0] = 0;
+        for (int i = 1; i <= eventsSize; i++) {
+            int take = evs[i - 1].value;
+            int prev_index = pre[i - 1];
+            if (prev_index != -1) {
+                take += dp0[prev_index + 1];
+            }
+            int not_take = dp1[i - 1];
+            dp1[i] = (take > not_take) ? take : not_take;
+        }
+        int *temp = dp0;
+        dp0 = dp1;
+        dp1 = temp;
+    }
+
+    int result = dp0[eventsSize];
+
+    free(evs);
+    free(pre);
+    free(dp0);
+    free(dp1);
+
+    return result; //B4C0λ
+}
