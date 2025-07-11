@@ -1,0 +1,98 @@
+int comp(const void* a, const void* b) {
+    return (*(int**)a)[0] - (*(int**)b)[0];
+}
+
+int mostBooked(int n, int** meetings, int meetingsSize, int* meetingsColSize) {
+    qsort(meetings, meetingsSize, sizeof(int*), comp);
+
+    long long used_time[n];
+    int used_count[n];
+    for (int i = 0; i < n; i++) {
+        used_time[i] = 0;
+        used_count[i] = 0;
+    }
+
+    for (int meet_point = 0; meet_point < meetingsSize; meet_point++) {
+        long long start = meetings[meet_point][0];
+        long long end = meetings[meet_point][1];
+        int room_num = -1;
+        long long fast = LLONG_MAX;
+
+        for (int i = 0; i < n; i++) {
+            if (used_time[i] <= start) {
+                room_num = i;
+                used_time[i] = start;
+                break;
+            }
+            if (used_time[i] < fast) {
+                fast = used_time[i];
+                room_num = i;
+            }
+        }
+
+        if (used_time[room_num] > start) {
+            used_time[room_num] += end - start;
+        } else {
+            used_time[room_num] = end;
+        }
+        used_count[room_num]++;
+    }
+
+    int ans = 0;
+    for (int i = 1; i < n; i++) {
+        if (used_count[i] > used_count[ans]) {
+            ans = i;
+        }
+    }
+
+    return ans;
+}
+int comp(const void* a, const void* b) {
+    return (*(int**)a)[0] - (*(int**)b)[0];
+}
+
+int mostBooked(int n, int** meetings, int meetingsSize, int* meetingsColSize) {
+    qsort(meetings, meetingsSize, sizeof(int*), comp);
+
+    long long used_time[n];
+    int used_count[n];
+    for (int i = 0; i < n; i++) {
+        used_time[i] = 0;
+        used_count[i] = 0;
+    }
+
+    for (int meet_point = 0; meet_point < meetingsSize; meet_point++) {
+        long long start = meetings[meet_point][0];
+        long long end = meetings[meet_point][1];
+        int room_num = -1;
+        long long fast = LLONG_MAX;
+
+        for (int i = 0; i < n; i++) {
+            if (used_time[i] <= start) {
+                room_num = i;
+                used_time[i] = start;
+                break;
+            }
+            if (used_time[i] < fast) {
+                fast = used_time[i];
+                room_num = i;
+            }
+        }
+
+        if (used_time[room_num] > start) {
+            used_time[room_num] += end - start;
+        } else {
+            used_time[room_num] = end;
+        }
+        used_count[room_num]++;
+    }
+
+    int ans = 0;
+    for (int i = 1; i < n; i++) {
+        if (used_count[i] > used_count[ans]) {
+            ans = i;
+        }
+    }
+
+    return ans;
+}
