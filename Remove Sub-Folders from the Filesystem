@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+int compareStrings(const void* a, const void* b) {
+    char* str1 = *(char**)a;
+    char* str2 = *(char**)b;
+    return strcmp(str1, str2);
+}
+
+bool isSubfolder(const char* parent, const char* child) {
+    size_t len = strlen(parent);
+    return strncmp(parent, child, len) == 0 && child[len] == '/';
+}
+
+char** removeSubfolders(char** folder, int folderSize, int* returnSize) {
+    qsort(folder, folderSize, sizeof(char*), compareStrings);
+
+    char** result = (char**)malloc(sizeof(char*) * folderSize);
+    int count = 0;
+
+    for (int i = 0; i < folderSize; ++i) {
+        if (count == 0 || !isSubfolder(result[count - 1], folder[i])) {
+            result[count++] = folder[i];  // reuse existing string
+        }
+    }
+
+    *returnSize = count;
+    return result;
+}
