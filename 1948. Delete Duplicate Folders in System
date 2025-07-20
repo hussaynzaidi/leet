@@ -1,0 +1,161 @@
+//NOT WORKING
+#define HASH_SIZE 1000003
+
+typedef struct Node {
+    char *name;
+    struct Node **children;
+    int child_count, child_cap;
+    bool deleted;
+    char *serial;
+} Node;
+
+typedef struct HashEntry {
+    char *serial;
+    Node **nodes;
+    int count;
+    struct HashEntry *next;
+} HashEntry;
+
+static HashEntry *hashmap[HASH_SIZE];
+
+static unsigned hash_str(const char *s) {
+    unsigned h = 0;
+    while (*s) h = h * 1315423911u + *s++;
+    return h % HASH_SIZE;
+}
+
+static void hash_insert(const char *s, Node *node) {
+    unsigned idx = hash_str(s);
+    HashEntry *e = hashmap[idx];
+    while (e) {
+        if (!strcmp(e->serial, s)) {
+            e->nodes = realloc(e->nodes, sizeof(Node *) * (e->count + 1));
+            e->nodes[e->count++] = node;
+            return;
+        }
+        e = e->next;
+    }
+    e = malloc(sizeof(HashEntry));
+    e->serial = strdup(s);
+    e->nodes = malloc(sizeof(Node *));
+    e->nodes[0] = node;
+    e->count = 1;
+    e->next = hashmap[idx];
+    hashmap[idx] = e;
+}
+
+Node* new_node(const char *name) {
+    Node *n = calloc(1, sizeof(Node));
+    n->name = strdup(name);
+    n->child_cap = 4;
+    n->children = malloc(sizeof(Node*) * n->child_cap);
+    return n;
+}
+
+void insert_path(Node *root, char **path, int len) {
+    Node *cur = root;
+    for (int i = 0; i < len; i++) {
+        bool found = false;
+        for (int j = 0; j < cur->child_count; j++) {
+            if (!strcmp(cur->children[j]->name, path[i])) {
+                cur = cur->children[j];
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            if (cur->child_count == cur->child_cap) {
+                cur->child_cap *= 2;
+                cur->children = realloc(cur->children, sizeof(Node*) * cur->child_cap);
+            }
+            Node *c = new_node(path[i]);
+            cur->children[cur->child_count++] = c;
+            cur = c;
+        }
+    }
+}
+
+char* encode(Node *node) {
+    if (node->child_count == 0) {
+        node->serial = strdup("()");
+        hash_insert(node->serial, node);
+        return strdup(node->serial);
+    }
+    // collect children serials
+    char **parts = malloc(node->child_count * sizeof(char*));
+    for (int i = 0; i < node->child_count; i++) {
+        parts[i] = encode(node->children[i]);
+    }
+    // sort lex
+    for (int i = 0; i < node->child_count; i++)
+        for (int j = i+1; j < node->child_count; j++)
+            if (strcmp(parts[i], parts[j]) > 0) {
+                char *t = parts[i];
+                parts[i] = parts[j];
+                parts[j] = t;
+            }
+    // concatenate
+    int L = 2;
+    for (int i = 0; i < node->child_count; i++)
+        L += strlen(node->children[i]->name) + strlen(parts[i]) + 2;
+    char *s = malloc(L);
+    strcpy(s, "(");
+    for (int i = 0; i < node->child_count; i++) {
+        strcat(s, node->children[i]->name);
+        strcat(s, parts[i]);
+        free(parts[i]);
+    }
+    strcat(s, ")");
+    free(parts);
+    node->serial = strdup(s);
+    hash_insert(s, node);
+    return s;
+}
+
+void delete_dups() {
+    for (int i = 0; i < HASH_SIZE; i++) {
+        for (HashEntry *e = hashmap[i]; e; e = e->next) {
+            if (e->count > 1) {
+                for (int j = 0; j < e->count; j++) {
+                    e->nodes[j]->deleted = true;
+                }
+            }
+        }
+    }
+}
+
+void collect(Node *node, char **stack, int depth, char ****out, int *rsz, int **csz, int *cap) {
+    for (int i = 0; i < node->child_count; i++) {
+        Node *c = node->children[i];
+        if (!c->deleted) {
+            stack[depth] = c->name;
+            if (*rsz == *cap) {
+                *cap *= 2;
+                *out = realloc(*out, sizeof(char**) * (*cap));
+                *csz = realloc(*csz, sizeof(int) * (*cap));
+            }
+            (*out)[*rsz] = malloc(sizeof(char*) * (depth + 1));
+            for (int k = 0; k <= depth; k++)
+                (*out)[*rsz][k] = strdup(stack[k]);
+            (*csz)[*rsz] = depth + 1;
+            (*rsz)++;
+            collect(c, stack, depth + 1, out, rsz, csz, cap);
+        }
+    }
+}
+
+char*** deleteDuplicateFolder(char*** paths, int n, int *cols, int *rsize, int **rcsz) {
+    Node *root = new_node("");
+    for (int i = 0; i < n; i++)
+        insert_path(root, paths[i], cols[i]);
+    encode(root);
+    delete_dups();
+
+    int cap = 128;
+    char ***out = malloc(sizeof(char**) * cap);
+    *rcsz = malloc(sizeof(int) * cap);
+    *rsize = 0;
+    char *stk[1000];
+    collect(root, stk, 0, &out, rsize, rcsz, &cap);
+    return out;
+}
