@@ -1,0 +1,25 @@
+char* makeFancyString(char* s) {
+    int len = strlen(s);
+    if (len == 0) return strdup("");
+
+    char* result = (char*)malloc(len + 1); // Allocate enough space
+    int j = 0;
+    int freq = 1;
+
+    result[j++] = s[0];
+
+    for (int i = 1; i < len; ++i) {
+        if (s[i] == s[i - 1]) {
+            freq++;
+        } else {
+            freq = 1;
+        }
+
+        if (freq < 3) {
+            result[j++] = s[i];
+        }
+    }
+
+    result[j] = '\0';
+    return result;
+}
