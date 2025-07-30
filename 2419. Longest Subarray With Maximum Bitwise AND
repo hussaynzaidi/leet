@@ -1,0 +1,30 @@
+#include <stdio.h>
+
+// Helper function to get max of two integers
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+int longestSubarray(int* nums, int numsSize) {
+    int maxVal = 0;
+    int ans = 0;
+    int currentStreak = 0;
+
+    for (int i = 0; i < numsSize; i++) {
+        if (maxVal < nums[i]) {
+            maxVal = nums[i];
+            ans = 0;
+            currentStreak = 0;
+        }
+
+        if (nums[i] == maxVal) {
+            currentStreak++;
+        } else {
+            currentStreak = 0;
+        }
+
+        ans = max(ans, currentStreak);
+    }
+
+    return ans;
+}
