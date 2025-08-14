@@ -1,0 +1,32 @@
+char* largestGoodInteger(char* num) {
+    static char result[4]; // 3 chars + null terminator
+    const char* sameDigitNumbers[] = {
+        "999", "888", "777", "666", "555",
+        "444", "333", "222", "111", "000"
+    };
+    int totalPatterns = 10;
+
+    // Helper function inline
+    auto bool contains(const char* pattern, const char* numStr) {
+        int len = strlen(numStr);
+        for (int i = 0; i <= len - 3; i++) {
+            if (numStr[i] == pattern[0] &&
+                numStr[i+1] == pattern[1] &&
+                numStr[i+2] == pattern[2]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    for (int i = 0; i < totalPatterns; i++) {
+        if (contains(sameDigitNumbers[i], num)) {
+            strcpy(result, sameDigitNumbers[i]);
+            return result;
+        }
+    }
+
+    // No match found
+    result[0] = '\0';
+    return result;
+}
