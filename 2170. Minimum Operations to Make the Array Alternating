@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VAL 100001  // adjust based on constraints
+
+int minimumOperations(int* nums, int numsSize) {
+    int totalEven = 0, totalOdd = 0;
+    int mapEven[MAX_VAL] = {0};
+    int mapOdd[MAX_VAL] = {0};
+
+    // Count frequencies for even and odd indices
+    for (int i = 0; i < numsSize; i++) {
+        if (i % 2 == 0) {
+            totalEven++;
+            mapEven[nums[i]]++;
+        } else {
+            totalOdd++;
+            mapOdd[nums[i]]++;
+        }
+    }
+
+    // Find top two frequencies for even positions
+    int firstEvenCount = 0, firstEven = 0;
+    int secondEvenCount = 0, secondEven = 0;
+    for (int i = 0; i < MAX_VAL; i++) {
+        int count = mapEven[i];
+        if (count >= firstEvenCount) {
+            secondEvenCount = firstEvenCount;
+            secondEven = firstEven;
+            firstEvenCount = count;
+            firstEven = i;
+        } else if (count >= secondEvenCount) {
+            secondEvenCount = count;
+            secondEven = i;
+        }
+    }
+
+    // Find top two frequencies for odd positions
+    int firstOddCount = 0, firstOdd = 0;
+    int secondOddCount = 0, secondOdd = 0;
+    for (int i = 0; i < MAX_VAL; i++) {
+        int count = mapOdd[i];
+        if (count >= firstOddCount) {
+            secondOddCount = firstOddCount;
+            secondOdd = firstOdd;
+            firstOddCount = count;
+            firstOdd = i;
+        } else if (count >= secondOddCount) {
+            secondOddCount = count;
+            secondOdd = i;
+        }
+    }
+
+    // Compute possible operations
+    int operationsEven = totalEven - firstEvenCount;
+    if (firstEven != firstOdd)
+        operationsEven += (totalOdd - firstOddCount);
+    else
+        operationsEven += (totalOdd - secondOddCount);
+
+    int operationsOdd = totalOdd - firstOddCount;
+    if (firstOdd != firstEven)
+        operationsOdd += (totalEven - firstEvenCount);
+    else
+        operationsOdd += (totalEven - secondEvenCount);
+
+    return (operationsEven < operationsOdd) ? operationsEven : operationsOdd;
+}
