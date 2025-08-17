@@ -1,0 +1,15 @@
+double new21Game(int n, int k, int maxPts) {
+    double dp[k+1], totalProbability = n - k;
+    if (n-k > maxPts) totalProbability = maxPts;
+    dp[k] = 1.0;
+    for (int i = k-1; i >= 0; --i) {
+        totalProbability += dp[i+1];
+        int j = i + maxPts + 1;
+        if (j <= n) {
+            if (j > k) totalProbability -= 1.0;
+            else totalProbability -= dp[j];
+        }
+        dp[i] = totalProbability / maxPts;
+    }
+    return dp[0];
+}
