@@ -1,0 +1,25 @@
+int maxFrequencyElements(int* nums, int numsSize) {
+    int max = 0, x = 0;
+
+    for (int i = 0; i < numsSize; i++) {
+        int currentElement = nums[i];
+        int currentFrequency = 0;
+
+        // Count the frequency of the current element
+        for (int j = 0; j < numsSize; j++) {
+            if (nums[j] == currentElement) {
+                currentFrequency++;
+            }
+        }
+
+        // Update max frequency and count if needed
+        if (currentFrequency > max) {
+            max = currentFrequency;
+            x = 1; // Reset the count to 1 for the new max frequency
+        } else if (currentFrequency == max) {
+            x++; // Increment count for elements with the same max frequency
+        }
+    }
+
+    return x;
+}
