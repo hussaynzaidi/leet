@@ -1,0 +1,83 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+typedef struct {
+    int time;
+    int x, y;
+} Node;
+
+typedef struct {
+    Node* data;
+    int size, capacity;
+} MinHeap;
+
+MinHeap* createHeap(int cap) {
+    MinHeap* h = (MinHeap*)malloc(sizeof(MinHeap));
+    h -> data = (Node*)malloc(sizeof(Node) * cap);
+    h -> size = 0;
+    h -> capacity = cap;
+    return h;
+}
+
+void swap(Node* a, Node* b) {
+    Node t = *a; *a = *b; *b = t;
+}
+
+void push(MinHeap* h, Node val) {
+    int i = h -> size++;
+    h -> data[i] = val;
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (h -> data[p].time <= h -> data[i].time) break;
+        swap(&h -> data[p], &h -> data[i]);
+        i = p;
+    }
+}
+
+Node pop(MinHeap* h) {
+    Node root = h -> data[0];
+    h -> data[0] = h -> data[--h -> size];
+    int i = 0;
+    while (1) {
+        int l = 2 * i + 1, r = 2 * i + 2, smallest = i;
+        if (l < h -> size && h -> data[l].time < h -> data[smallest].time) smallest = l;
+        if (r < h -> size && h -> data[r].time < h -> data[smallest].time) smallest = r;
+        if (smallest == i) break;
+        swap(&h -> data[i], &h -> data[smallest]);
+        i = smallest;
+    }
+    return root;
+}
+
+int swimInWater(int** grid, int gridSize, int* gridColSize) {
+    int n = gridSize;
+    int** dist = (int**)malloc(sizeof(int*) * n);
+    for (int i = 0; i < n; i++) {
+        dist[i] = (int*)malloc(sizeof(int) * n);
+        for (int j = 0; j < n; j++) {
+            dist[i][j] = INT_MAX;
+        }
+    }
+
+    int dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    MinHeap* pq = createHeap(n * n);
+    dist[0][0] = grid[0][0];
+    push(pq, (Node){grid[0][0], 0, 0});
+
+    while (pq -> size) {
+        Node cur = pop(pq);
+        int t = cur.time, x = cur.x, y = cur.y;
+        if (x == n - 1 && y == n - 1) return t;
+        for (int k = 0; k < 4; k++) {
+            int nx = x + dirs[k][0], ny = y + dirs[k][1];
+            if (nx < 0 || ny < 0 || nx >= n || ny >= n) continue;
+            int newt = grid[nx][ny] > t ? grid[nx][ny] : t;
+            if (newt < dist[nx][ny]) {
+                dist[nx][ny] = newt;
+                push(pq, (Node){newt, nx, ny});
+            }
+        }
+    }
+    return -1;
+}
