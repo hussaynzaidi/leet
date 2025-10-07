@@ -1,0 +1,100 @@
+#define MAXN 100005
+#define Hashsize 2007
+
+typedef struct Node{
+    int key;
+    int value;
+    struct Node *next;
+}Node;
+
+Node *hashtable[Hashsize];
+
+unsigned int hashfunc(int key){
+    return (unsigned int) key%Hashsize;
+}
+
+int get(int key){
+    unsigned int h = hashfunc(key);
+    Node *cur = hashtable[h];
+    while(cur){
+        if (cur->key == key) return cur->value;
+        cur = cur->next;
+    }
+    return -1;
+}
+
+void set(int key, int value){
+    unsigned int h = hashfunc(key);
+        Node *cur = hashtable[h];
+        while(cur){
+            if (cur->key == key){
+                cur->value = value;
+                return;
+            }
+            cur = cur->next;
+        }
+        // neu ko co 
+        Node *newNode = malloc(sizeof(Node));
+        newNode -> key = key;
+        newNode -> value = value;
+        newNode -> next = hashtable[h];
+        hashtable[h] = newNode;
+}
+
+void clear(){
+    for(int i=0;i<Hashsize;i++){
+        Node *cur = hashtable[i];
+        while (cur){
+            Node *tmp = cur;
+            cur = cur->next;
+            free(tmp);
+        }
+        hashtable[i] = NULL;
+    }
+}
+
+int upper_bound(int *st, int idx_st, int tar, int *used){
+    int low = 0, high = idx_st;
+    while(low<high){
+        int mid = (low+high)/2;
+        if (st[mid]<=tar) low = mid+1;
+        else high = mid;
+    }
+    while(low<idx_st && used[low]) low++;
+    return low;
+}
+
+int* avoidFlood(int* rains, int n, int* returnSize) {
+    static int res[MAXN];
+    static int st[MAXN];
+    static int used[MAXN];
+    int idx_st = 0;
+    for (int i=0;i<n;i++) res[i] = 1; // chua dinh phat nao
+
+    for (int i=0;i<n;i++){
+        if (rains[i] == 0){
+            st[idx_st] = i; // tang dan ss, mark
+            used[idx_st++] = 0; // ch dung
+        }
+        else{
+            res[i] = -1; // da dung
+
+            int prev = get(rains[i]);
+            if (prev != -1){ // da xhien lan 2
+                int pos = upper_bound(st, idx_st, prev, used); // tim trong mang st xem co lam can dc k
+                if (pos == idx_st){
+                    *returnSize = 0;
+                    clear();
+                    return NULL;
+                }
+                res[st[pos]] = rains[i]; // cac cho co so 0 dc dien vao
+                used[pos] = 1;
+            }
+            set(rains[i], i); // i la cai val
+        }
+    }
+    *returnSize = n;
+    clear();
+    return res;
+
+}
